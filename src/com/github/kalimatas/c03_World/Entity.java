@@ -1,8 +1,9 @@
 package com.github.kalimatas.c03_World;
 
+import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 
-public class Entity {
+abstract public class Entity extends SceneNode {
     private Vector2f velocity = new Vector2f(0.f, 0.f);
 
     public void setVelocity(Vector2f velocity) {
@@ -15,5 +16,9 @@ public class Entity {
 
     public Vector2f getVelocity() {
         return velocity;
+    }
+
+    protected void updateCurrent(Time dt) {
+        move(Vector2f.mul(velocity, dt.asSeconds()));
     }
 }
