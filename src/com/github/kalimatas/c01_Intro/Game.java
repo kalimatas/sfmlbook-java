@@ -17,8 +17,13 @@ public class Game {
     private static final Time timePerFrame = Time.getSeconds(1.0f / 60.0f);
 
     RenderWindow window;
-    Texture texture;
-    Sprite player;
+    Texture texture = new Texture();
+    Sprite player = new Sprite();
+
+    Font font = new Font();
+    Text statisticsText = new Text();
+    Time statisticsUpdateTime = Time.ZERO;
+    int statisticsNumFrames = 0;
 
     boolean isMovingUp = false;
     boolean isMovingDown = false;
@@ -28,7 +33,6 @@ public class Game {
     Game() {
         window = new RenderWindow(new VideoMode(640, 480), "SFML Application");
 
-        texture = new Texture();
         try {
             texture.loadFromFile(Paths.get(getClass().getResource("Media/Textures/Eagle.png").getPath()));
         } catch (IOException e) {
@@ -36,9 +40,18 @@ public class Game {
             System.out.println(e.getMessage());
         }
 
-        player = new Sprite();
         player.setTexture(texture);
         player.setPosition(100.f, 100.f);
+
+        try {
+            font.loadFromFile(Paths.get(getClass().getResource("Media/Sansation.ttf").getPath()));
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
+
+        statisticsText.setFont(font);
+        statisticsText.setPosition(5.f, 5.f);
+        statisticsText.setCharacterSize(10);
     }
 
     void run() {
@@ -53,6 +66,8 @@ public class Game {
                 processEvents();
                 update(timePerFrame);
             }
+
+            updateStatistics(elapsedTime);
             render();
         }
     }
@@ -73,6 +88,21 @@ public class Game {
                     window.close();
                     break;
             }
+        }
+    }
+
+    private void updateStatistics(Time elapsedTime)
+    {
+        statisticsUpdateTime = Time.add(statisticsUpdateTime, elapsedTime);
+        statisticsNumFrames += 1;
+
+        if (statisticsUpdateTime.asSeconds() >= Time.getSeconds(1.0f).asSeconds()) {
+            statisticsText.setString(
+                    "Frames / Second = " + statisticsNumFrames + "\n" +
+                            "Time / Update = " + (statisticsUpdateTime.asMicroseconds() / statisticsNumFrames) + "us");
+
+            statisticsUpdateTime = Time.sub(statisticsUpdateTime, Time.getSeconds(1.0f));
+            statisticsNumFrames = 0;
         }
     }
 
@@ -109,6 +139,7 @@ public class Game {
     private void render() {
         window.clear();
         window.draw(player);
+        window.draw(statisticsText);
         window.display();
     }
 }
