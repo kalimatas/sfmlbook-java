@@ -74,4 +74,8 @@ public class SceneNode extends BasicTransformable
     public Vector2f getWorldPosition() {
         return getWorldTransform().transformPoint(new Vector2f(0.f, 0.f));
     }
+
+    public int getCategory() {
+        return Category.NONE;
+    }
 }

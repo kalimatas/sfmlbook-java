@@ -36,4 +36,13 @@ public class Aircraft extends Entity {
         }
         return Textures.EAGLE;
     }
+
+    public int getCategory() {
+        switch (type) {
+            case EAGLE:
+                return Category.PLAYER_AIRCRAFT;
+            default:
+                return Category.ENEMY_AIRCRAFT;
+        }
+    }
 }
