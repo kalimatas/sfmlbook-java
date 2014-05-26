@@ -75,6 +75,16 @@ public class SceneNode extends BasicTransformable
         return getWorldTransform().transformPoint(new Vector2f(0.f, 0.f));
     }
 
+    public void onCommand(final Command command, Time dt) {
+        if ((command.category & getCategory()) > 0) {
+            command.action.invoke(this, dt);
+        }
+
+        for (SceneNode child : children) {
+            child.onCommand(command, dt);
+        }
+    }
+
     public int getCategory() {
         return Category.NONE;
     }
