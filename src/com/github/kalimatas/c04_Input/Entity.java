@@ -18,6 +18,14 @@ abstract public class Entity extends SceneNode {
         return velocity;
     }
 
+    public void accelerate(Vector2f velocity) {
+        this.velocity = Vector2f.add(this.velocity, velocity);
+    }
+
+    public void accelerate(float vx, float vy) {
+        this.velocity = Vector2f.add(this.velocity, new Vector2f(vx, vy));
+    }
+
     protected void updateCurrent(Time dt) {
         move(Vector2f.mul(velocity, dt.asSeconds()));
     }
