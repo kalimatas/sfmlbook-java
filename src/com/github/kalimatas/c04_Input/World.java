@@ -23,6 +23,7 @@ public class World {
     Aircraft playerAircraft;
 
     World (RenderWindow window) {
+    private CommandQueue commandQueue = new CommandQueue();
         this.window = window;
         this.worldView = new View(window.getDefaultView().getCenter(), window.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 2000.f);
@@ -37,7 +38,13 @@ public class World {
 
     public void update(Time dt) {
         worldView.move(0.f, scrollSpeed * dt.asSeconds());
+        // todo: player
 
+        while (!commandQueue.isEmpty()) {
+            sceneGraph.onCommand(commandQueue.pop(), dt);
+        }
+
+        /*
         Vector2f position = playerAircraft.getPosition();
         Vector2f velocity = playerAircraft.getVelocity();
 
@@ -47,6 +54,7 @@ public class World {
             Vector2f newVelocity = new Vector2f(-velocity.x, velocity.y);
             playerAircraft.setVelocity(newVelocity);
         }
+        */
 
         sceneGraph.update(dt);
     }
@@ -54,6 +62,10 @@ public class World {
     public void draw() {
         window.setView(worldView);
         window.draw(sceneGraph);
+    }
+
+    public CommandQueue getCommandQueue() {
+        return commandQueue;
     }
 
     private void loadTextures() {

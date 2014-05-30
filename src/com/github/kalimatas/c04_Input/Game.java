@@ -18,6 +18,7 @@ public class Game {
 
     RenderWindow window;
     World world;
+    private Player player = new Player();
 
     Font font = new Font();
     Text statisticsText = new Text();
@@ -45,7 +46,8 @@ public class Game {
             timeSinceLastUpdate = Time.add(timeSinceLastUpdate, elapsedTime);
             while (timeSinceLastUpdate.asMicroseconds() > timePerFrame.asMicroseconds()) {
                 timeSinceLastUpdate = Time.sub(timeSinceLastUpdate, timePerFrame);
-                processEvents();
+
+                processInput();
                 update(timePerFrame);
             }
 
@@ -54,8 +56,17 @@ public class Game {
         }
     }
 
-    private void processEvents() {
+    private void processInput() {
+        CommandQueue commands = world.getCommandQueue();
+
         for (Event event : window.pollEvents()) {
+            player.handleEvent(event, commands);
+
+            if (event.type == Event.Type.CLOSED) {
+                window.close();
+            }
+
+            /*
             KeyEvent keyEvent;
             switch (event.type) {
                 case KEY_PRESSED:
@@ -70,7 +81,10 @@ public class Game {
                     window.close();
                     break;
             }
+            */
         }
+
+        player.handleRealtimeInput(commands);
     }
 
     private void update(Time deltaTime) {
