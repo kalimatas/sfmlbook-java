@@ -11,19 +11,19 @@ public class World {
         LAYERCOUNT,
     }
 
-    RenderWindow window;
-    View worldView;
-    ResourceHolder textures = new ResourceHolder();
-    SceneNode sceneGraph = new SceneNode();
-    SceneNode[] sceneLayers = new SceneNode[Layer.LAYERCOUNT.ordinal()];
-
-    FloatRect worldBounds;
-    Vector2f spawnPosition;
-    float scrollSpeed = -50.f;
-    Aircraft playerAircraft;
-
-    World (RenderWindow window) {
+    private RenderWindow window;
+    private View worldView;
+    private ResourceHolder textures = new ResourceHolder();
+    private SceneNode sceneGraph = new SceneNode();
+    private SceneNode[] sceneLayers = new SceneNode[Layer.LAYERCOUNT.ordinal()];
     private CommandQueue commandQueue = new CommandQueue();
+
+    private FloatRect worldBounds;
+    private Vector2f spawnPosition;
+    private float scrollSpeed = -50.f;
+    private Aircraft playerAircraft;
+
+    public World (RenderWindow window) {
         this.window = window;
         this.worldView = new View(window.getDefaultView().getCenter(), window.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 2000.f);
