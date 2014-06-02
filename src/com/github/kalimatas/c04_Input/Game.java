@@ -65,23 +65,6 @@ public class Game {
             if (event.type == Event.Type.CLOSED) {
                 window.close();
             }
-
-            /*
-            KeyEvent keyEvent;
-            switch (event.type) {
-                case KEY_PRESSED:
-                    keyEvent = event.asKeyEvent();
-                    handlePlayerInput(keyEvent.key, true);
-                    break;
-                case KEY_RELEASED:
-                    keyEvent = event.asKeyEvent();
-                    handlePlayerInput(keyEvent.key, false);
-                    break;
-                case CLOSED:
-                    window.close();
-                    break;
-            }
-            */
         }
 
         player.handleRealtimeInput(commands);

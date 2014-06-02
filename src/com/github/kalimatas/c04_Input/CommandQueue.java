@@ -3,7 +3,7 @@ package com.github.kalimatas.c04_Input;
 import java.util.LinkedList;
 
 public class CommandQueue {
-    private LinkedList<Command> queue;
+    private LinkedList<Command> queue = new LinkedList<>();
 
     public void push(final Command command) {
         queue.add(command);

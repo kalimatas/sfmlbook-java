@@ -37,26 +37,19 @@ public class World {
     }
 
     public void update(Time dt) {
+        // Scroll the world, reset player velocity
         worldView.move(0.f, scrollSpeed * dt.asSeconds());
-        // todo: player
+        playerAircraft.setVelocity(0.f, 0.f);
 
+        // Forward commands to scene graph, adapt velocity (scrolling, diagonal correction)
         while (!commandQueue.isEmpty()) {
             sceneGraph.onCommand(commandQueue.pop(), dt);
         }
+        adaptPlayerVelocity();
 
-        /*
-        Vector2f position = playerAircraft.getPosition();
-        Vector2f velocity = playerAircraft.getVelocity();
-
-        if (position.x <= worldBounds.left + 150
-            || position.x >= worldBounds.left + worldBounds.width - 150)
-        {
-            Vector2f newVelocity = new Vector2f(-velocity.x, velocity.y);
-            playerAircraft.setVelocity(newVelocity);
-        }
-        */
-
+        // Regular update step, adapt position (correct if outside view)
         sceneGraph.update(dt);
+        adaptPlayerPosition();
     }
 
     public void draw() {
@@ -107,5 +100,39 @@ public class World {
         Aircraft rightEscort = new Aircraft(Aircraft.Type.RAPTOR, textures);
         rightEscort.setPosition(80.f, 50.f);
         playerAircraft.attachChild(rightEscort);
+    }
+
+    private void adaptPlayerPosition() {
+        // Keep player's position inside the screen bounds, at least borderDistance units from the border
+        Vector2f size = worldView.getSize();
+        Vector2f sizeDiv = Vector2f.div(worldView.getSize(), 2.f);
+
+        Vector2f center = worldView.getCenter();
+        Vector2f centerSub = Vector2f.sub(worldView.getCenter(), sizeDiv);
+
+        FloatRect viewBounds = new FloatRect(
+            Vector2f.sub(worldView.getCenter(), Vector2f.div(worldView.getSize(), 2.f)),
+            worldView.getSize()
+        );
+        final float borderDistance = 40.f;
+
+        Vector2f position = playerAircraft.getPosition();
+        float xPosition = Math.max(position.x, viewBounds.left + borderDistance);
+        xPosition = Math.min(xPosition, viewBounds.left + viewBounds.width - borderDistance);
+        float yPosition = Math.max(position.y, viewBounds.top + borderDistance);
+        yPosition = Math.min(yPosition, viewBounds.top + viewBounds.height + borderDistance);
+        playerAircraft.setPosition(xPosition, yPosition);
+    }
+
+    private void adaptPlayerVelocity() {
+        Vector2f velocity = playerAircraft.getVelocity();
+
+        // If moving diagonally, reduce velocity (to have always same velocity)
+        if (velocity.x != 0.f && velocity.y != 0.f) {
+            playerAircraft.setVelocity(Vector2f.div(velocity, (float)Math.sqrt(2.f)));
+        }
+
+        // Add scrolling velocity
+        playerAircraft.accelerate(velocity);
     }
 }
