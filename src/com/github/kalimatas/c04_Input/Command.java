@@ -1,6 +1,6 @@
 package com.github.kalimatas.c04_Input;
 
 public class Command {
-    Action action;
+    CommandAction commandAction;
     int category = Category.NONE;
 }
