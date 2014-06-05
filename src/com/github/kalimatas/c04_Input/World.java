@@ -89,30 +89,14 @@ public class World {
         // Add player's aircraft
         playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures);
         playerAircraft.setPosition(spawnPosition);
-        playerAircraft.setVelocity(40.f, scrollSpeed);
         sceneLayers[Layer.AIR.ordinal()].attachChild(playerAircraft);
-
-        // Add two escorting aircrafts, placed relatively to the main plane
-        Aircraft leftEscort = new Aircraft(Aircraft.Type.RAPTOR, textures);
-        leftEscort.setPosition(-80.f, 50.f);
-        playerAircraft.attachChild(leftEscort);
-
-        Aircraft rightEscort = new Aircraft(Aircraft.Type.RAPTOR, textures);
-        rightEscort.setPosition(80.f, 50.f);
-        playerAircraft.attachChild(rightEscort);
     }
 
     private void adaptPlayerPosition() {
         // Keep player's position inside the screen bounds, at least borderDistance units from the border
-        Vector2f size = worldView.getSize();
-        Vector2f sizeDiv = Vector2f.div(worldView.getSize(), 2.f);
-
-        Vector2f center = worldView.getCenter();
-        Vector2f centerSub = Vector2f.sub(worldView.getCenter(), sizeDiv);
-
         FloatRect viewBounds = new FloatRect(
             Vector2f.sub(worldView.getCenter(), Vector2f.div(worldView.getSize(), 2.f)),
-            worldView.getSize()
+                worldView.getSize()
         );
         final float borderDistance = 40.f;
 
@@ -120,7 +104,8 @@ public class World {
         float xPosition = Math.max(position.x, viewBounds.left + borderDistance);
         xPosition = Math.min(xPosition, viewBounds.left + viewBounds.width - borderDistance);
         float yPosition = Math.max(position.y, viewBounds.top + borderDistance);
-        yPosition = Math.min(yPosition, viewBounds.top + viewBounds.height + borderDistance);
+        yPosition = Math.min(yPosition, viewBounds.top + viewBounds.height - borderDistance);
+
         playerAircraft.setPosition(xPosition, yPosition);
     }
 
@@ -133,6 +118,6 @@ public class World {
         }
 
         // Add scrolling velocity
-        playerAircraft.accelerate(velocity);
+        playerAircraft.accelerate(0.f, scrollSpeed);
     }
 }

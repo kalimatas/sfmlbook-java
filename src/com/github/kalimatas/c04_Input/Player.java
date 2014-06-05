@@ -22,7 +22,7 @@ public class Player {
     }
 
     public void handleRealtimeInput(CommandQueue commands) {
-        final float playerSpeed = 30.f;
+        final float playerSpeed = 200.f;
 
         if (Keyboard.isKeyPressed(Keyboard.Key.UP)) {
             Command moveUp = new Command();
