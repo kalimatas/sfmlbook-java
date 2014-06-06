@@ -3,13 +3,13 @@ package com.github.kalimatas.c04_Input;
 import org.jsfml.graphics.*;
 
 public class SpriteNode extends SceneNode {
-    Sprite sprite = new Sprite();
+    private Sprite sprite = new Sprite();
 
-    SpriteNode(Texture texture) {
+    public SpriteNode(Texture texture) {
         this.sprite.setTexture(texture);
     }
 
-    SpriteNode(Texture texture, IntRect rect) {
+    public SpriteNode(Texture texture, IntRect rect) {
         this.sprite.setTexture(texture);
         this.sprite.setTextureRect(rect);
     }

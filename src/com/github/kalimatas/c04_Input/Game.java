@@ -5,11 +5,9 @@ import org.jsfml.graphics.RenderWindow;
 import org.jsfml.graphics.Text;
 import org.jsfml.system.Clock;
 import org.jsfml.system.Time;
-import org.jsfml.window.Keyboard;
 import org.jsfml.window.VideoMode;
 import org.jsfml.window.WindowStyle;
 import org.jsfml.window.event.Event;
-import org.jsfml.window.event.KeyEvent;
 
 import java.io.IOException;
 
@@ -96,9 +94,5 @@ public class Game {
             statisticsUpdateTime = Time.sub(statisticsUpdateTime, Time.getSeconds(1.0f));
             statisticsNumFrames = 0;
         }
-    }
-
-    private void handlePlayerInput(Keyboard.Key key, boolean isPressed) {
-
     }
 }
