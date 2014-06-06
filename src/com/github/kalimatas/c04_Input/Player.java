@@ -39,30 +39,41 @@ public class Player {
     }
 
     public void handleEvent(final Event event, CommandQueue commands) {
-        if (event.type == Event.Type.KEY_PRESSED && event.asKeyEvent().key == Keyboard.Key.P) {
-            Command output = new Command();
-            output.category = Category.PLAYER_AIRCRAFT;
-            output.commandAction = new CommandAction() {
-                @Override
-                public void invoke(SceneNode node, Time dt) {
-                    System.out.println(node.getPosition().x + "," + node.getPosition().y);
-                }
-            };
-            commands.push(output);
+        if (event.type == Event.Type.KEY_PRESSED) {
+            // Check if pressed key appears in key binding, trigger command if so
+            Action foundAction = keyBinding.get(event.asKeyEvent().key);
+            if (foundAction != null && !isRealtimeAction(foundAction)) {
+                commands.push(actionBinding.get(foundAction));
+            }
         }
     }
 
     public void handleRealtimeInput(CommandQueue commands) {
         // Traverse all assigned keys and check if they are pressed
+        for (Map.Entry<Keyboard.Key, Action> pair : keyBinding.entrySet()) {
+            // If key is pressed, lookup action and trigger corresponding command
+            if (Keyboard.isKeyPressed(pair.getKey()) && isRealtimeAction(pair.getValue())) {
+                commands.push(actionBinding.get(pair.getValue()));
+            }
+        }
     }
 
     public void assignKey(Action action, Keyboard.Key key) {
         // Remove all keys that already map to action
+        keyBinding.values().remove(action);
 
+        // Insert new binding
+        keyBinding.put(key, action);
     }
 
     public Keyboard.Key getAssignedKey(Action action) {
-        return null;
+        for (Map.Entry<Keyboard.Key, Action> pair : keyBinding.entrySet()) {
+            if (action.equals(pair.getValue())) {
+                return pair.getKey();
+            }
+        }
+
+        return Keyboard.Key.UNKNOWN;
     }
 
     private void initializeActions() {
