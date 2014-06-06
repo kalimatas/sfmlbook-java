@@ -117,7 +117,7 @@ public class Player {
     }
 }
 
-class AircraftMover implements CommandAction {
+class AircraftMover implements CommandAction<Aircraft> {
     private Vector2f velocity;
 
     AircraftMover(float vx, float vy) {
@@ -125,8 +125,7 @@ class AircraftMover implements CommandAction {
     }
 
     @Override
-    public void invoke(SceneNode node, Time dt) {
-        Aircraft aircraft = (Aircraft)node;
+    public void invoke(Aircraft aircraft, Time dt) {
         aircraft.accelerate(velocity);
     }
 }
