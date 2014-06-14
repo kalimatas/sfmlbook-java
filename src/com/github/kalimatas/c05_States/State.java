@@ -8,7 +8,7 @@ abstract public class State {
     private StateStack stack;
     private Context context;
 
-    public class Context {
+    public static class Context {
         public RenderWindow window;
         public ResourceHolder textures;
         public ResourceHolder fonts;

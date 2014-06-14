@@ -1,6 +1,5 @@
 package com.github.kalimatas.c05_States;
 
-import org.jsfml.graphics.Font;
 import org.jsfml.graphics.RenderWindow;
 import org.jsfml.graphics.Text;
 import org.jsfml.system.Clock;
@@ -9,30 +8,35 @@ import org.jsfml.window.VideoMode;
 import org.jsfml.window.WindowStyle;
 import org.jsfml.window.event.Event;
 
-import java.io.IOException;
-import java.nio.file.Paths;
-
-public class Game {
+public class Application {
     private static final Time timePerFrame = Time.getSeconds(1.0f / 60.0f);
 
     private RenderWindow window;
-    private World world;
+    private ResourceHolder textures = new ResourceHolder();
+    private ResourceHolder fonts = new ResourceHolder();
     private Player player = new Player();
 
-    private Font font = new Font();
+    private StateStack stateStack;
+
     private Text statisticsText = new Text();
     private Time statisticsUpdateTime = Time.ZERO;
     private int statisticsNumFrames = 0;
 
-    public Game() throws IOException {
-        window = new RenderWindow(new VideoMode(640, 480), "World", WindowStyle.CLOSE);
-        world = new World(window);
+    public Application() {
+        window = new RenderWindow(new VideoMode(640, 480), "States", WindowStyle.CLOSE);
+        stateStack = new StateStack(new State.Context(window, textures, fonts, player));
 
-        font.loadFromFile(Paths.get(getClass().getResource("Media/Sansation.ttf").getPath()));
+        window.setKeyRepeatEnabled(false);
 
-        statisticsText.setFont(font);
+        fonts.loadFont(Fonts.MAIN, "Media/Sansation.ttf");
+        textures.loadTexture(Textures.TITLE_SCREEN, "Media/Textures/TitleScreen.png");
+
+        statisticsText.setFont(fonts.getFont(Fonts.MAIN));
         statisticsText.setPosition(5.f, 5.f);
         statisticsText.setCharacterSize(10);
+
+        registerStates();
+        stateStack.pushState(States.TITLE);
     }
 
     public void run() {
@@ -40,59 +44,63 @@ public class Game {
         Time timeSinceLastUpdate = Time.ZERO;
 
         while (window.isOpen()) {
-            Time elapsedTime = clock.restart();
-            timeSinceLastUpdate = Time.add(timeSinceLastUpdate, elapsedTime);
+            Time dt = clock.restart();
+            timeSinceLastUpdate = Time.add(timeSinceLastUpdate, dt);
             while (timeSinceLastUpdate.asMicroseconds() > timePerFrame.asMicroseconds()) {
                 timeSinceLastUpdate = Time.sub(timeSinceLastUpdate, timePerFrame);
 
                 processInput();
                 update(timePerFrame);
+
+                // Check inside this loop, because stack might be empty before update() call
+                if (stateStack.isEmpty()) {
+                    window.close();
+                }
             }
 
-            updateStatistics(elapsedTime);
+            updateStatistics(dt);
             render();
         }
     }
 
     private void processInput() {
-        CommandQueue commands = world.getCommandQueue();
-
         for (Event event : window.pollEvents()) {
-            player.handleEvent(event, commands);
+            stateStack.handleEvent(event);
 
             if (event.type == Event.Type.CLOSED) {
                 window.close();
             }
         }
-
-        player.handleRealtimeInput(commands);
     }
 
-    private void update(Time deltaTime) {
-        world.update(deltaTime);
+    private void update(Time dt) {
+        stateStack.update(dt);
     }
 
     private void render() {
         window.clear();
-        world.draw();
+
+        stateStack.draw();
 
         window.setView(window.getDefaultView());
         window.draw(statisticsText);
+
         window.display();
     }
 
-    private void updateStatistics(Time elapsedTime)
-    {
-        statisticsUpdateTime = Time.add(statisticsUpdateTime, elapsedTime);
+    private void updateStatistics(Time dt) {
+        statisticsUpdateTime = Time.add(statisticsUpdateTime, dt);
         statisticsNumFrames += 1;
 
         if (statisticsUpdateTime.asSeconds() >= Time.getSeconds(1.0f).asSeconds()) {
-            statisticsText.setString(
-                "Frames / Second = " + statisticsNumFrames + "\n" +
-                "Time / Update = " + (statisticsUpdateTime.asMicroseconds() / statisticsNumFrames) + "us");
+            statisticsText.setString("FPS: " + statisticsNumFrames);
 
             statisticsUpdateTime = Time.sub(statisticsUpdateTime, Time.getSeconds(1.0f));
             statisticsNumFrames = 0;
         }
+    }
+
+    private void registerStates() {
+
     }
 }
