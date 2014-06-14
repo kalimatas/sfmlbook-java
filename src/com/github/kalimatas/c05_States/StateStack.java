@@ -74,6 +74,8 @@ public class StateStack {
 
     private State createState(States stateId) {
         switch (stateId) {
+            case TITLE:
+                return new TitleState(this, context);
             default:
                 throw new InvalidParameterException();
         }
