@@ -76,6 +76,8 @@ public class StateStack {
         switch (stateId) {
             case TITLE:
                 return new TitleState(this, context);
+            case GAME:
+                return new GameState(this, context);
             default:
                 throw new InvalidParameterException();
         }
