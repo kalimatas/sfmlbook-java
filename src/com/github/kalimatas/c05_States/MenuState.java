@@ -72,6 +72,8 @@ public class MenuState extends State {
             if (optionIndex == OptionNames.PLAY.ordinal()) {
                 requestStackPop();
                 requestStackPush(States.GAME);
+                // replace the above line with the following to enable loading task
+                //requestStackPush(States.LOADING);
             } else if (optionIndex == OptionNames.EXIT.ordinal()) {
                 // The exit option was chosen, by removing itself, the stack will be empty, and the game will know it is time to close.
                 requestStackPop();
