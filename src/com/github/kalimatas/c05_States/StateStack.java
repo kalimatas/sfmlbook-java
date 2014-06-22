@@ -80,6 +80,8 @@ public class StateStack {
                 return new MenuState(this, context);
             case GAME:
                 return new GameState(this, context);
+            case PAUSE:
+                return new PauseState(this, context);
             default:
                 throw new InvalidParameterException();
         }
