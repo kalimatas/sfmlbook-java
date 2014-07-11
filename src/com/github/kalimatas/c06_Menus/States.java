@@ -7,4 +7,5 @@ public enum States {
     GAME,
     LOADING,
     PAUSE,
+    SETTINGS,
 }

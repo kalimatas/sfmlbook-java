@@ -1,47 +1,56 @@
 package com.github.kalimatas.c06_Menus;
 
+import com.github.kalimatas.c06_Menus.GUI.Button;
+import com.github.kalimatas.c06_Menus.GUI.Callback;
+import com.github.kalimatas.c06_Menus.GUI.Container;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Time;
-import org.jsfml.system.Vector2f;
-import org.jsfml.window.Keyboard;
 import org.jsfml.window.event.Event;
-
-import java.util.LinkedList;
 
 public class MenuState extends State {
     private Sprite backgroundSprite = new Sprite();
-    private LinkedList<Text> options = new LinkedList<>();
-    private int optionIndex = 0;
-
-    private enum OptionNames {
-        PLAY,
-        EXIT,
-    }
+    private Container GUIContainer = new Container();
 
     public MenuState(StateStack stack, Context context) {
         super(stack, context);
 
         Texture texture = context.textures.getTexture(Textures.TITLE_SCREEN);
-        Font font = context.fonts.getFont(Fonts.MAIN);
-
         backgroundSprite.setTexture(texture);
 
-        // A simple menu demonstration
-        Text playOption = new Text();
-        playOption.setFont(font);
-        playOption.setString("Play");
-        Utility.centerOrigin(playOption);
-        playOption.setPosition(Vector2f.div(context.window.getView().getSize(), 2.f));
-        options.addLast(playOption);
+        Button playButton = new Button(context.fonts, context.textures);
+        playButton.setPosition(100, 250);
+        playButton.setText("Play");
+        playButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStackPop();
+                requestStackPush(States.GAME);
+            }
+        });
 
-        Text exitOption = new Text();
-        exitOption.setFont(font);
-        exitOption.setString("Exit");
-        Utility.centerOrigin(exitOption);
-        exitOption.setPosition(Vector2f.add(playOption.getPosition(), new Vector2f(0.f, 30.f)));
-        options.addLast(exitOption);
+        Button settingsButton = new Button(context.fonts, context.textures);
+        settingsButton.setPosition(100, 300);
+        settingsButton.setText("Settings");
+        settingsButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStackPush(States.SETTINGS);
+            }
+        });
 
-        updateOptionText();
+        Button exitButton = new Button(context.fonts, context.textures);
+        exitButton.setPosition(100, 350);
+        exitButton.setText("Exit");
+        exitButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStackPop();
+            }
+        });
+
+        GUIContainer.pack(playButton);
+        GUIContainer.pack(settingsButton);
+        GUIContainer.pack(exitButton);
     }
 
     @Override
@@ -49,11 +58,9 @@ public class MenuState extends State {
         RenderWindow window = getContext().window;
 
         window.setView(window.getDefaultView());
-        window.draw(backgroundSprite);
 
-        for (Text text : options) {
-            window.draw(text);
-        }
+        window.draw(backgroundSprite);
+        window.draw(GUIContainer);
     }
 
     @Override
@@ -63,57 +70,7 @@ public class MenuState extends State {
 
     @Override
     public boolean handleEvent(Event event) {
-        // The demonstration menu logic
-        if (event.type != Event.Type.KEY_PRESSED) {
-            return false;
-        }
-
-        if (event.asKeyEvent().key == Keyboard.Key.RETURN) {
-            if (optionIndex == OptionNames.PLAY.ordinal()) {
-                requestStackPop();
-                requestStackPush(States.GAME);
-            } else if (optionIndex == OptionNames.EXIT.ordinal()) {
-                // The exit option was chosen, by removing itself, the stack will be empty, and the game will know it is time to close.
-                requestStackPop();
-            }
-        }
-
-        else if (event.asKeyEvent().key == Keyboard.Key.UP) {
-            // Decrement and wrap-around
-            if (optionIndex > 0) {
-                optionIndex--;
-            } else {
-                optionIndex = options.size() - 1;
-            }
-
-            updateOptionText();
-        }
-
-        else if (event.asKeyEvent().key == Keyboard.Key.DOWN) {
-            // Increment and wrap-around
-            if (optionIndex < options.size() - 1) {
-                optionIndex++;
-            } else {
-                optionIndex = 0;
-            }
-
-            updateOptionText();
-        }
-
-        return true;
-    }
-
-    public void updateOptionText() {
-        if (options.isEmpty()) {
-            return;
-        }
-
-        // White all texts
-        for (Text text : options) {
-            text.setColor(Color.WHITE);
-        }
-
-        // Red the selected text
-        options.get(optionIndex).setColor(Color.RED);
+        GUIContainer.handleEvent(event);
+        return false;
     }
 }
