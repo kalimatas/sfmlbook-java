@@ -13,11 +13,26 @@ public class Player {
     private Map<Action, Command> actionBinding = new HashMap<>();
 
     public enum Action {
-        MOVE_LEFT,
-        MOVE_RIGHT,
-        MOVE_UP,
-        MOVE_DOWN,
-        ACTION_COUNT,
+        MOVE_LEFT(0),
+        MOVE_RIGHT(1),
+        MOVE_UP(2),
+        MOVE_DOWN(3),
+        ACTION_COUNT(4);
+
+        private int actionIndex;
+
+        private Action(final int actionIndex) {
+            this.actionIndex = actionIndex;
+        }
+
+        public static Action getAction(int actionIndex) {
+            for (Action action : values()) {
+                if (action.actionIndex == actionIndex) {
+                    return action;
+                }
+            }
+            throw new IllegalArgumentException();
+        }
     }
 
     public Player() {

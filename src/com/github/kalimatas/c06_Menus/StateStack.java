@@ -78,6 +78,8 @@ public class StateStack {
                 return new TitleState(this, context);
             case MENU:
                 return new MenuState(this, context);
+            case SETTINGS:
+                return new SettingsState(this, context);
             case GAME:
                 return new GameState(this, context);
             case PAUSE:

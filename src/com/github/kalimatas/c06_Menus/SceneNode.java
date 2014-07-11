@@ -78,6 +78,7 @@ public class SceneNode extends BasicTransformable
         return transform;
     }
 
+    @SuppressWarnings("unchecked")
     public void onCommand(final Command command, Time dt) {
         // Command current node, if category matches
         if ((command.category & getCategory()) > 0) {
