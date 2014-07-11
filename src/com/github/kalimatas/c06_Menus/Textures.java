@@ -5,4 +5,7 @@ public enum Textures {
     RAPTOR,
     DESERT,
     TITLE_SCREEN,
+    BUTTON_NORMAL,
+    BUTTON_SELECTED,
+    BUTTON_PRESSED
 }
