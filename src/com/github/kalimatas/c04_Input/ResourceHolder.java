@@ -5,10 +5,10 @@ import org.jsfml.graphics.Texture;
 import java.io.IOException;
 import java.util.HashMap;
 
-class ResourceHolder {
+public class ResourceHolder {
     private HashMap<Textures, Texture> textureMap = new HashMap<>();
 
-    void loadTexture(Textures id, final String filename) {
+    public void loadTexture(Textures id, final String filename) {
         Texture texture = new Texture();
         try {
             // Need to load from stream in order to load from JAR
@@ -20,7 +20,7 @@ class ResourceHolder {
         textureMap.put(id, texture);
     }
 
-    Texture getTexture(Textures id) {
+    public Texture getTexture(Textures id) {
         return textureMap.get(id);
     }
 }

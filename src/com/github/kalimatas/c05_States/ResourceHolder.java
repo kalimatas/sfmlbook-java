@@ -6,11 +6,11 @@ import org.jsfml.graphics.Texture;
 import java.io.IOException;
 import java.util.HashMap;
 
-class ResourceHolder {
+public class ResourceHolder {
     private HashMap<Textures, Texture> textureMap = new HashMap<>();
     private HashMap<Fonts, Font> fontMap = new HashMap<>();
 
-    void loadTexture(Textures id, final String filename) {
+    public void loadTexture(Textures id, final String filename) {
         Texture texture = new Texture();
         try {
             // Need to load from stream in order to load from JAR
@@ -22,11 +22,11 @@ class ResourceHolder {
         textureMap.put(id, texture);
     }
 
-    Texture getTexture(Textures id) {
+    public Texture getTexture(Textures id) {
         return textureMap.get(id);
     }
 
-    void loadFont(Fonts id, final String filename) {
+    public void loadFont(Fonts id, final String filename) {
         Font font = new Font();
         try {
             // Need to load from stream in order to load from JAR
@@ -38,7 +38,7 @@ class ResourceHolder {
         fontMap.put(id, font);
     }
 
-    Font getFont(Fonts id) {
+    public Font getFont(Fonts id) {
         return fontMap.get(id);
     }
 }

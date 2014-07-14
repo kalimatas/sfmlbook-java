@@ -8,7 +8,7 @@ import java.util.HashMap;
 class ResourceHolder {
     private HashMap<ID, Texture> textureMap = new HashMap<>();
 
-    void loadTexture(ID id, final String filename) {
+    public void loadTexture(ID id, final String filename) {
         Texture texture = new Texture();
         try {
             // Need to load from stream in order to load from JAR
@@ -20,7 +20,7 @@ class ResourceHolder {
         textureMap.put(id, texture);
     }
 
-    Texture getTexture(ID id) {
+    public Texture getTexture(ID id) {
         return textureMap.get(id);
     }
 }

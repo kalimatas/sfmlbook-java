@@ -10,31 +10,31 @@ import org.jsfml.window.event.Event;
 import org.jsfml.window.event.KeyEvent;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 
 public class Game {
     private static final float playerSpeed = 100.f;
     private static final Time timePerFrame = Time.getSeconds(1.0f / 60.0f);
 
-    RenderWindow window;
-    Texture texture = new Texture();
-    Sprite player = new Sprite();
+    private RenderWindow window;
+    private Texture texture = new Texture();
+    private Sprite player = new Sprite();
 
-    Font font = new Font();
-    Text statisticsText = new Text();
-    Time statisticsUpdateTime = Time.ZERO;
-    int statisticsNumFrames = 0;
+    private Font font = new Font();
+    private Text statisticsText = new Text();
+    private Time statisticsUpdateTime = Time.ZERO;
+    private int statisticsNumFrames = 0;
 
-    boolean isMovingUp = false;
-    boolean isMovingDown = false;
-    boolean isMovingLeft = false;
-    boolean isMovingRight = false;
+    private boolean isMovingUp = false;
+    private boolean isMovingDown = false;
+    private boolean isMovingLeft = false;
+    private boolean isMovingRight = false;
 
-    Game() {
+    public Game() {
         window = new RenderWindow(new VideoMode(640, 480), "SFML Application");
 
         try {
-            texture.loadFromFile(Paths.get(getClass().getResource("Media/Textures/Eagle.png").getPath()));
+            // Need to load from stream in order to load from JAR
+            texture.loadFromStream(getClass().getResourceAsStream("Media/Textures/Eagle.png"));
         } catch (IOException e) {
             // Handle loading error
             System.out.println(e.getMessage());
@@ -44,7 +44,8 @@ public class Game {
         player.setPosition(100.f, 100.f);
 
         try {
-            font.loadFromFile(Paths.get(getClass().getResource("Media/Sansation.ttf").getPath()));
+            // Need to load from stream in order to load from JAR
+            font.loadFromStream(getClass().getResourceAsStream("Media/Sansation.ttf"));
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
@@ -54,7 +55,7 @@ public class Game {
         statisticsText.setCharacterSize(10);
     }
 
-    void run() {
+    public void run() {
         Clock clock = new Clock();
         Time timeSinceLastUpdate = Time.ZERO;
 

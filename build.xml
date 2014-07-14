@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="SFML java" default="info">
+
+    <property name="src.dir" value="src" />
+    <property name="lib.dir" value="lib" />
+    <property name="build.dir" value="build" />
+    <property name="output.dir" value="output" />
+    <property name="source.repository" value="https://github.com/kalimatas/sfmlbook-java.git" />
+
+    <target name="info" description="Get project information">
+        <echo>Java port of the SFML book source code</echo>
+        <echo />
+        <echo>Repository: ${source.repository}</echo>
+    </target>
+
+    <target name="01_Intro" depends="create-dirs" description="Generate JAR for chapter 1">
+        <echo>Generating JAR for "Chapter 01"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c01_Intro" />
+            <param name="chapter.main" value="com.github.kalimatas.c01_Intro.Intro" />
+            <param name="chapter.executable" value="01_intro.jar" />
+        </antcall>
+    </target>
+
+    <target name="02_Resources" depends="create-dirs" description="Generate JAR for chapter 2">
+        <echo>Generating JAR for "Chapter 02"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c02_Resources" />
+            <param name="chapter.main" value="com.github.kalimatas.c02_Resources.Resources" />
+            <param name="chapter.executable" value="02_resources.jar" />
+        </antcall>
+    </target>
+
+    <target name="03_World" depends="create-dirs" description="Generate JAR for chapter 3">
+        <echo>Generating JAR for "Chapter 03"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c03_World" />
+            <param name="chapter.main" value="com.github.kalimatas.c03_World.WorldRun" />
+            <param name="chapter.executable" value="03_world.jar" />
+        </antcall>
+    </target>
+
+    <target name="04_Input" depends="create-dirs" description="Generate JAR for chapter 4">
+        <echo>Generating JAR for "Chapter 04"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c04_Input" />
+            <param name="chapter.main" value="com.github.kalimatas.c04_Input.Main" />
+            <param name="chapter.executable" value="04_input.jar" />
+        </antcall>
+    </target>
+
+    <target name="05_States" depends="create-dirs" description="Generate JAR for chapter 5">
+        <echo>Generating JAR for "Chapter 05"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c05_States" />
+            <param name="chapter.main" value="com.github.kalimatas.c05_States.Main" />
+            <param name="chapter.executable" value="05_states.jar" />
+        </antcall>
+    </target>
+
+    <target name="06_Menus" depends="create-dirs" description="Generate JAR for chapter 6">
+        <echo>Generating JAR for "Chapter 06"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c06_Menus" />
+            <param name="chapter.main" value="com.github.kalimatas.c06_Menus.Main" />
+            <param name="chapter.executable" value="06_menus.jar" />
+        </antcall>
+    </target>
+
+    <target name="build">
+        <delete dir="${build.dir}/${chapter.dir}" />
+        <delete file="${output.dir}/${chapter.executable}" />
+
+        <javac destdir="${build.dir}"
+               srcdir="${src.dir}/${chapter.dir}"
+               classpath="${lib.dir}/jsfml.jar" />
+
+        <copy todir="${build.dir}/${chapter.dir}/Media" overwrite="true">
+            <fileset dir="${src.dir}/${chapter.dir}/Media/" />
+        </copy>
+
+        <jar destfile="${output.dir}/${chapter.executable}" basedir="${build.dir}">
+            <fileset dir="${build.dir}/${chapter.dir}">
+                <exclude name="Media/**" />
+                <exclude name="**/*.class" />
+            </fileset>
+            <zipfileset src="${lib.dir}/jsfml.jar" />
+            <manifest>
+                <attribute name="Main-Class" value="${chapter.main}" />
+            </manifest>
+         </jar>
+    </target>
+
+    <target name="clean-all" description="Clean output directories">
+        <delete dir="${build.dir}" />
+        <delete dir="${output.dir}" />
+    </target>
+
+    <target name="create-dirs">
+        <mkdir dir="${build.dir}" />
+        <mkdir dir="${output.dir}" />
+    </target>
+
+</project>

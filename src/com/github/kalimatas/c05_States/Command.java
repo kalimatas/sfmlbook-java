@@ -1,6 +1,6 @@
 package com.github.kalimatas.c05_States;
 
 public class Command {
-    CommandAction commandAction;
-    int category = Category.NONE;
+    public CommandAction commandAction;
+    public int category = Category.NONE;
 }

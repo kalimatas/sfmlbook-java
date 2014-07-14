@@ -14,15 +14,15 @@ import java.io.IOException;
 public class Game {
     private static final Time timePerFrame = Time.getSeconds(1.0f / 60.0f);
 
-    RenderWindow window;
-    World world;
+    private RenderWindow window;
+    private World world;
 
-    Font font = new Font();
-    Text statisticsText = new Text();
-    Time statisticsUpdateTime = Time.ZERO;
-    int statisticsNumFrames = 0;
+    private Font font = new Font();
+    private Text statisticsText = new Text();
+    private Time statisticsUpdateTime = Time.ZERO;
+    private int statisticsNumFrames = 0;
 
-    Game() throws IOException {
+    public Game() throws IOException {
         window = new RenderWindow(new VideoMode(640, 480), "World", WindowStyle.CLOSE);
         world = new World(window);
 
@@ -34,7 +34,7 @@ public class Game {
         statisticsText.setCharacterSize(10);
     }
 
-    void run() {
+    public void run() {
         Clock clock = new Clock();
         Time timeSinceLastUpdate = Time.ZERO;
 
