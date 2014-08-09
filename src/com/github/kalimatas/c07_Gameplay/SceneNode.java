@@ -29,18 +29,18 @@ public class SceneNode extends BasicTransformable
         return result;
     }
 
-    public final void update(Time dt) {
-        updateCurrent(dt);
-        updateChildren(dt);
+    public final void update(Time dt, CommandQueue commands) {
+        updateCurrent(dt, commands);
+        updateChildren(dt, commands);
     }
 
-    protected void updateCurrent(Time dt) {
+    protected void updateCurrent(Time dt, CommandQueue commands) {
         // Do nothing by default
     }
 
-    protected void updateChildren(Time dt) {
+    protected void updateChildren(Time dt, CommandQueue commands) {
         for (SceneNode child : children) {
-            child.update(dt);
+            child.update(dt, commands);
         }
     }
 

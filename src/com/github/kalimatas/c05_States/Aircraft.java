@@ -1,6 +1,5 @@
 package com.github.kalimatas.c05_States;
 
-import org.jsfml.graphics.FloatRect;
 import org.jsfml.graphics.RenderStates;
 import org.jsfml.graphics.RenderTarget;
 import org.jsfml.graphics.Sprite;
@@ -14,12 +13,11 @@ public class Aircraft extends Entity {
     private Type type;
     private Sprite sprite;
 
-    public Aircraft(Type type, ResourceHolder textures) {
+    public Aircraft(Type type, final ResourceHolder textures) {
         this.type = type;
         this.sprite = new Sprite(textures.getTexture(toTextureID(type)));
 
-        FloatRect bounds = this.sprite.getLocalBounds();
-        this.sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+        Utility.centerOrigin(this.sprite);
     }
 
     @Override

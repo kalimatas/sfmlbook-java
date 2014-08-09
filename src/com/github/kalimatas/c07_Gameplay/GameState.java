@@ -11,7 +11,7 @@ public class GameState extends State {
     public GameState(StateStack stack, Context context) {
         super(stack, context);
 
-        world = new World(context.window);
+        world = new World(context.window, context.fonts);
         player = context.player;
     }
 

@@ -14,6 +14,7 @@ public class World {
     private RenderWindow window;
     private View worldView;
     private ResourceHolder textures = new ResourceHolder();
+    private ResourceHolder fonts;
     private SceneNode sceneGraph = new SceneNode();
     private SceneNode[] sceneLayers = new SceneNode[Layer.LAYERCOUNT.ordinal()];
     private CommandQueue commandQueue = new CommandQueue();
@@ -23,8 +24,9 @@ public class World {
     private float scrollSpeed = -50.f;
     private Aircraft playerAircraft;
 
-    public World (RenderWindow window) {
+    public World (RenderWindow window, ResourceHolder fonts) {
         this.window = window;
+        this.fonts = fonts;
         this.worldView = new View(window.getDefaultView().getCenter(), window.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 2000.f);
         this.spawnPosition = new Vector2f(worldView.getSize().x / 2.f, worldBounds.height - worldView.getSize().y / 2.f);
@@ -48,7 +50,7 @@ public class World {
         adaptPlayerVelocity();
 
         // Regular update step, adapt position (correct if outside view)
-        sceneGraph.update(dt);
+        sceneGraph.update(dt, commandQueue);
         adaptPlayerPosition();
     }
 
@@ -88,7 +90,7 @@ public class World {
         sceneLayers[Layer.BACKGROUND.ordinal()].attachChild(backgroundSprite);
 
         // Add player's aircraft
-        playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures);
+        playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures, fonts);
         playerAircraft.setPosition(spawnPosition);
         sceneLayers[Layer.AIR.ordinal()].attachChild(playerAircraft);
     }

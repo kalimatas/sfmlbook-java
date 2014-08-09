@@ -59,7 +59,7 @@ abstract public class Entity extends SceneNode {
         return hitpoints <= 0;
     }
 
-    protected void updateCurrent(Time dt) {
+    protected void updateCurrent(Time dt, CommandQueue commands) {
         move(Vector2f.mul(velocity, dt.asSeconds()));
     }
 }
