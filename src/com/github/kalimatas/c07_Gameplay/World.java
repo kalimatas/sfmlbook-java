@@ -64,6 +64,7 @@ public class World {
     private void loadTextures() {
         textures.loadTexture(Textures.EAGLE, "Media/Textures/Eagle.png");
         textures.loadTexture(Textures.RAPTOR, "Media/Textures/Raptor.png");
+        textures.loadTexture(Textures.AVENGER, "Media/Textures/Avenger.png");
         textures.loadTexture(Textures.DESERT, "Media/Textures/Desert.png");
     }
 
