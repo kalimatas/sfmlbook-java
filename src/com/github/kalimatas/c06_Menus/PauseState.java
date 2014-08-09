@@ -1,15 +1,16 @@
 package com.github.kalimatas.c06_Menus;
 
+import com.github.kalimatas.c06_Menus.GUI.Button;
+import com.github.kalimatas.c06_Menus.GUI.Callback;
+import com.github.kalimatas.c06_Menus.GUI.Container;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
-import org.jsfml.window.Keyboard;
 import org.jsfml.window.event.Event;
 
 public class PauseState extends State {
-    private Sprite backgroundSprite = new Sprite();
     private Text pausedText = new Text();
-    private Text instructionText = new Text();
+    private Container GUIContainer = new Container();
 
     public PauseState(StateStack stack, Context context) {
         super(stack, context);
@@ -23,10 +24,29 @@ public class PauseState extends State {
         Utility.centerOrigin(pausedText);
         pausedText.setPosition(0.5f * viewSize.x, 0.4f * viewSize.y);
 
-        instructionText.setFont(font);
-        instructionText.setString("Press Backspace to return to the main menu");
-        Utility.centerOrigin(instructionText);
-        instructionText.setPosition(0.5f * viewSize.x, 0.6f * viewSize.y);
+        Button returnButton = new Button(context.fonts, context.textures);
+        returnButton.setPosition(0.5f * viewSize.x -100, 0.4f * viewSize.y + 75);
+        returnButton.setText("Return");
+        returnButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStackPop();
+            }
+        });
+
+        Button backToMenuButton = new Button(context.fonts, context.textures);
+        backToMenuButton.setPosition(0.5f * viewSize.x - 100, 0.4f * viewSize.y + 125);
+        backToMenuButton.setText("Back to menu");
+        backToMenuButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStateClear();
+                requestStackPush(States.MENU);
+            }
+        });
+
+        GUIContainer.pack(returnButton);
+        GUIContainer.pack(backToMenuButton);
     }
 
     @Override
@@ -40,7 +60,7 @@ public class PauseState extends State {
 
         window.draw(backgroundShape);
         window.draw(pausedText);
-        window.draw(instructionText);
+        window.draw(GUIContainer);
     }
 
     @Override
@@ -50,21 +70,7 @@ public class PauseState extends State {
 
     @Override
     public boolean handleEvent(Event event) {
-        if (event.type != Event.Type.KEY_PRESSED) {
-            return false;
-        }
-
-        if (event.asKeyEvent().key == Keyboard.Key.ESCAPE) {
-            // Escape pressed, remove to the game
-            requestStackPop();
-        }
-
-        if (event.asKeyEvent().key == Keyboard.Key.BACKSPACE) {
-            // Backspace pressed, remove itself to return to the game
-            requestStateClear();
-            requestStackPush(States.MENU);
-        }
-
+        GUIContainer.handleEvent(event);
         return false;
     }
 }
