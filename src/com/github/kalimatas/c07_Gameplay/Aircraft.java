@@ -15,6 +15,8 @@ public class Aircraft extends Entity {
     private Sprite sprite;
 
     public Aircraft(Type type, ResourceHolder textures) {
+        // todo: load value from data table
+        super(0);
         this.type = type;
         this.sprite = new Sprite(textures.getTexture(toTextureID(type)));
 
