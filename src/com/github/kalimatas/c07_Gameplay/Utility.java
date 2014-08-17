@@ -14,4 +14,8 @@ public class Utility {
         FloatRect bounds = text.getLocalBounds();
         text.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
     }
+
+    public static float toRadian(float degree) {
+        return (float)Math.PI / 180.f * degree;
+    }
 }

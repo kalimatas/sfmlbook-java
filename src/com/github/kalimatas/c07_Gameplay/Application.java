@@ -23,7 +23,7 @@ public class Application {
     private int statisticsNumFrames = 0;
 
     public Application() {
-        window = new RenderWindow(new VideoMode(640, 480), "States", WindowStyle.CLOSE);
+        window = new RenderWindow(new VideoMode(1024, 768), "Gameplay", WindowStyle.CLOSE);
         stateStack = new StateStack(new State.Context(window, textures, fonts, player));
 
         window.setKeyRepeatEnabled(false);

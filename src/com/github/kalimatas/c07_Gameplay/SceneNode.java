@@ -12,6 +12,7 @@ public class SceneNode extends BasicTransformable
 {
     private List<SceneNode> children = new ArrayList<>();
     private SceneNode parent;
+    private int category = Category.NONE;
 
     public void attachChild(SceneNode child) {
         child.parent = this;
@@ -91,7 +92,11 @@ public class SceneNode extends BasicTransformable
         }
     }
 
+    public void setCategory(int category) {
+        this.category = category;
+    }
+
     public int getCategory() {
-        return Category.SCENE;
+        return category;
     }
 }

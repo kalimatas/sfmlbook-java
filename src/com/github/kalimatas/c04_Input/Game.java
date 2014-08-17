@@ -24,7 +24,7 @@ public class Game {
     private int statisticsNumFrames = 0;
 
     public Game() throws IOException {
-        window = new RenderWindow(new VideoMode(640, 480), "World", WindowStyle.CLOSE);
+        window = new RenderWindow(new VideoMode(640, 480), "Input", WindowStyle.CLOSE);
         world = new World(window);
 
         // Need to load from stream in order to load from JAR

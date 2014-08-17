@@ -19,12 +19,20 @@ public class DataTables {
         raptor.hitpoints = 20;
         raptor.speed = 80.f;
         raptor.texture = Textures.RAPTOR;
+        raptor.directions.addLast(new Direction(+45.f, 80.f));
+        raptor.directions.addLast(new Direction(-45.f, 160.f));
+        raptor.directions.addLast(new Direction(+45.f, 80.f));
         data.add(Aircraft.Type.RAPTOR.ordinal(), raptor);
 
         AircraftData avenger = new AircraftData();
         avenger.hitpoints = 40;
         avenger.speed = 50.f;
         avenger.texture = Textures.AVENGER;
+        avenger.directions.addLast(new Direction(+45.f, 50.f));
+        avenger.directions.addLast(new Direction(0.f, 50.f));
+        avenger.directions.addLast(new Direction(-45.f, 100.f));
+        avenger.directions.addLast(new Direction(0.f, 50.f));
+        avenger.directions.addLast(new Direction(+45.f, 50.f));
         data.add(Aircraft.Type.AVENGER.ordinal(), avenger);
 
         return data;

@@ -2,12 +2,14 @@ package com.github.kalimatas.c07_Gameplay;
 
 import com.github.kalimatas.c07_Gameplay.DataTables.AircraftData;
 import com.github.kalimatas.c07_Gameplay.DataTables.DataTables;
+import com.github.kalimatas.c07_Gameplay.DataTables.Direction;
 import org.jsfml.graphics.RenderStates;
 import org.jsfml.graphics.RenderTarget;
 import org.jsfml.graphics.Sprite;
 import org.jsfml.system.Time;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class Aircraft extends Entity {
     public enum Type {
@@ -20,6 +22,8 @@ public class Aircraft extends Entity {
     private Type type;
     private Sprite sprite;
 
+    private float travelledDistance = 0.f;
+    private int directionIndex = 0;
     private TextNode healthDisplay;
 
     private static ArrayList<AircraftData> Table = DataTables.initializeAircraftData();
@@ -45,6 +49,8 @@ public class Aircraft extends Entity {
 
     @Override
     protected void updateCurrent(Time dt, CommandQueue commands) {
+        // Update enemy movement pattern; apply velocity
+        updateMovementPattern(dt);
         super.updateCurrent(dt, commands);
 
         // Update texts
@@ -52,11 +58,39 @@ public class Aircraft extends Entity {
     }
 
     public int getCategory() {
-        switch (type) {
-            case EAGLE:
-                return Category.PLAYER_AIRCRAFT;
-            default:
-                return Category.ENEMY_AIRCRAFT;
+        if (isAllied()) {
+            return Category.PLAYER_AIRCRAFT;
+        } else {
+            return Category.ENEMY_AIRCRAFT;
+        }
+    }
+
+    private boolean isAllied() {
+        return type == Type.EAGLE;
+    }
+
+    private float getMaxSpeed() {
+        return Table.get(this.type.ordinal()).speed;
+    }
+
+    private void updateMovementPattern(Time dt) {
+        // Enemy airplane: Movement pattern
+        final LinkedList<Direction> directions = Table.get(this.type.ordinal()).directions;
+        if (!directions.isEmpty()) {
+            // Moved long enough in current direction: Change direction
+            if (travelledDistance > directions.get(directionIndex).distance) {
+                directionIndex = (directionIndex + 1) % directions.size();
+                travelledDistance = 0.f;
+            }
+
+            // Compute velocity from direction
+            float radians = Utility.toRadian(directions.get(directionIndex).angle + 90.f);
+            float vx = getMaxSpeed() * (float) Math.cos((double)radians);
+            float vy = getMaxSpeed() * (float) Math.sin((double)radians);
+
+            setVelocity(vx, vy);
+
+            travelledDistance += getMaxSpeed() * dt.asSeconds();
         }
     }
 
