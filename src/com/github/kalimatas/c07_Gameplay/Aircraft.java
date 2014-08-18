@@ -3,6 +3,7 @@ package com.github.kalimatas.c07_Gameplay;
 import com.github.kalimatas.c07_Gameplay.DataTables.AircraftData;
 import com.github.kalimatas.c07_Gameplay.DataTables.DataTables;
 import com.github.kalimatas.c07_Gameplay.DataTables.Direction;
+import org.jsfml.graphics.FloatRect;
 import org.jsfml.graphics.RenderStates;
 import org.jsfml.graphics.RenderTarget;
 import org.jsfml.graphics.Sprite;
@@ -65,11 +66,15 @@ public class Aircraft extends Entity {
         }
     }
 
-    private boolean isAllied() {
+    public boolean isAllied() {
         return type == Type.EAGLE;
     }
 
-    private float getMaxSpeed() {
+    public FloatRect getBoundingRect() {
+        return getWorldTransform().transformRect(this.sprite.getGlobalBounds());
+    }
+
+    public float getMaxSpeed() {
         return Table.get(this.type.ordinal()).speed;
     }
 

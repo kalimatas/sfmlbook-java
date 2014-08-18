@@ -4,6 +4,8 @@ public enum Textures {
     EAGLE,
     RAPTOR,
     AVENGER,
+    BULLET,
+    MISSILE,
     DESERT,
     TITLE_SCREEN,
     BUTTON_NORMAL,

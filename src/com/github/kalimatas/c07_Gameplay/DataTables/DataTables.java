@@ -1,6 +1,7 @@
 package com.github.kalimatas.c07_Gameplay.DataTables;
 
 import com.github.kalimatas.c07_Gameplay.Aircraft;
+import com.github.kalimatas.c07_Gameplay.Projectile;
 import com.github.kalimatas.c07_Gameplay.Textures;
 
 import java.util.ArrayList;
@@ -34,6 +35,29 @@ public class DataTables {
         avenger.directions.addLast(new Direction(0.f, 50.f));
         avenger.directions.addLast(new Direction(+45.f, 50.f));
         data.add(Aircraft.Type.AVENGER.ordinal(), avenger);
+
+        return data;
+    }
+
+    public static ArrayList<ProjectileData> initializeProjectileData() {
+        ArrayList<ProjectileData> data = new ArrayList<>(Projectile.Type.TYPE_COUNT.ordinal());
+
+        ProjectileData alliedBullet = new ProjectileData();
+        alliedBullet.damage = 30;
+        alliedBullet.speed = 300.f;
+        alliedBullet.texture = Textures.BULLET;
+        data.add(Projectile.Type.ALLIED_BULLET.ordinal(), alliedBullet);
+
+        ProjectileData enemyBullet = new ProjectileData();
+        enemyBullet.damage = 10;
+        enemyBullet.speed = 300.f;
+        enemyBullet.texture = Textures.BULLET;
+        data.add(Projectile.Type.ENEMY_BULLET.ordinal(), enemyBullet);
+
+        ProjectileData missile = new ProjectileData();
+        missile.damage = 200;
+        missile.speed = 150.f;
+        data.add(Projectile.Type.MISSILE.ordinal(), missile);
 
         return data;
     }

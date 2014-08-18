@@ -94,6 +94,9 @@ public class World {
         textures.loadTexture(Textures.RAPTOR, "Media/Textures/Raptor.png");
         textures.loadTexture(Textures.AVENGER, "Media/Textures/Avenger.png");
         textures.loadTexture(Textures.DESERT, "Media/Textures/Desert.png");
+
+        textures.loadTexture(Textures.BULLET, "Media/Textures/Bullet.png");
+        textures.loadTexture(Textures.MISSILE, "Media/Textures/Missile.png");
     }
 
     private void buildScene() {
