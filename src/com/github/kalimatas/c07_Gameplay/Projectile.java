@@ -34,6 +34,10 @@ public class Projectile extends Entity {
         Utility.centerOrigin(this.sprite);
     }
 
+    public void guideTowards(Vector2f position) {
+        targetDirection = Utility.unitVector(Vector2f.sub(position, getWorldPosition()));
+    }
+
     public boolean isGuided() {
         return type == Type.MISSILE;
     }

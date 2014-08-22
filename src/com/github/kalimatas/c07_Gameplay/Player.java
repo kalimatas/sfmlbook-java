@@ -17,7 +17,9 @@ public class Player {
         MOVE_RIGHT(1),
         MOVE_UP(2),
         MOVE_DOWN(3),
-        ACTION_COUNT(4);
+        FIRE(4),
+        LAUNCH_MISSILE(5),
+        ACTION_COUNT(6);
 
         private int actionIndex;
 
@@ -41,6 +43,8 @@ public class Player {
         keyBinding.put(Keyboard.Key.RIGHT, Action.MOVE_RIGHT);
         keyBinding.put(Keyboard.Key.DOWN, Action.MOVE_DOWN);
         keyBinding.put(Keyboard.Key.UP, Action.MOVE_UP);
+        keyBinding.put(Keyboard.Key.SPACE, Action.FIRE);
+        keyBinding.put(Keyboard.Key.M, Action.LAUNCH_MISSILE);
 
         // Set initial action bindings
         initializeActions();
@@ -117,6 +121,28 @@ public class Player {
             command.commandAction = new AircraftMover(0.f, playerSpeed);
             actionBinding.put(Action.MOVE_DOWN, command);
         }
+
+        {
+            Command command = new Command();
+            command.commandAction = new CommandAction<Aircraft>() {
+                @Override
+                public void invoke(Aircraft aircraft, Time dt) {
+                    aircraft.fire();
+                }
+            };
+            actionBinding.put(Action.FIRE, command);
+        }
+
+        {
+            Command command = new Command();
+            command.commandAction = new CommandAction<Aircraft>() {
+                @Override
+                public void invoke(Aircraft aircraft, Time dt) {
+                    aircraft.launchingMissile();
+                }
+            };
+            actionBinding.put(Action.LAUNCH_MISSILE, command);
+        }
     }
 
     private boolean isRealtimeAction(Action action) {
@@ -125,6 +151,7 @@ public class Player {
             case MOVE_RIGHT:
             case MOVE_DOWN:
             case MOVE_UP:
+            case FIRE:
                 return true;
             default:
                 return false;
