@@ -63,7 +63,7 @@ public class World {
         playerAircraft.setVelocity(0.f, 0.f);
 
         // Setup commands to destroy entities, and guide missiles
-        // todo
+        guideMissiles();
 
         // Forward commands to scene graph, adapt velocity (scrolling, diagonal correction)
         while (!commandQueue.isEmpty()) {
@@ -197,6 +197,55 @@ public class World {
 
             sceneLayers[Layer.AIR.ordinal()].attachChild(enemy);
         }
+    }
+
+    private void guideMissiles() {
+        // Setup command that stores all enemies in activeEnemies
+        Command enemyCollector = new Command();
+        enemyCollector.category = Category.ENEMY_AIRCRAFT;
+        enemyCollector.commandAction = new CommandAction<Aircraft>() {
+            @Override
+            public void invoke(Aircraft enemy, Time dt) {
+                if (!enemy.isDestroyed()) {
+                    activeEnemies.addLast(enemy);
+                }
+            }
+        };
+
+        // Setup command that guides all missiles to the enemy which is currently closest to the player
+        Command missileGuider = new Command();
+        missileGuider.category = Category.ALLIED_PROJECTILE;
+        missileGuider.commandAction = new CommandAction<Projectile>() {
+            @Override
+            public void invoke(Projectile missile, Time dt) {
+                // Ignore unguided bullets
+                if (!missile.isGuided()) {
+                    return;
+                }
+
+                float minDistance = Float.MAX_VALUE;
+                Aircraft closestEnemy = null;
+
+                // Find closest enemy
+                for (Aircraft enemy : activeEnemies) {
+                    float enemyDistance = enemy.distance(missile, enemy);
+
+                    if (enemyDistance < minDistance) {
+                        closestEnemy = enemy;
+                        minDistance = enemyDistance;
+                    }
+                }
+
+                if (closestEnemy != null) {
+                    missile.guideTowards(closestEnemy.getWorldPosition());
+                }
+            }
+        };
+
+        // Push commands, reset active enemies
+        commandQueue.push(enemyCollector);
+        commandQueue.push(missileGuider);
+        activeEnemies.clear();
     }
 
     private FloatRect getViewBounds() {

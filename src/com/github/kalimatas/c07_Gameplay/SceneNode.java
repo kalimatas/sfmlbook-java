@@ -99,4 +99,13 @@ public class SceneNode extends BasicTransformable
     public int getCategory() {
         return category;
     }
+
+    public boolean isDestroyed() {
+        // By default, scene node needn't be removed
+        return false;
+    }
+
+    public float distance(final SceneNode lhs, final SceneNode rhs) {
+        return Utility.length(Vector2f.sub(lhs.getWorldPosition(), rhs.getWorldPosition()));
+    }
 }
