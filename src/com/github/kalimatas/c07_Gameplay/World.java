@@ -61,6 +61,7 @@ public class World {
         playerAircraft.setVelocity(0.f, 0.f);
 
         // Setup commands to destroy entities, and guide missiles
+        destroyEntetiesOutsideView();
         guideMissiles();
 
         // Forward commands to scene graph, adapt velocity (scrolling, diagonal correction)
@@ -254,6 +255,21 @@ public class World {
 
             sceneLayers[Layer.AIR.ordinal()].attachChild(enemy);
         }
+    }
+
+    private void destroyEntetiesOutsideView() {
+        Command command = new Command();
+        command.category = Category.PROJECTILE | Category.ENEMY_AIRCRAFT;
+        command.commandAction = new CommandAction<Entity>() {
+            @Override
+            public void invoke(Entity e, Time dt) {
+                if (getBattlefieldBounds().intersection(e.getBoundingRect()) == null) {
+                    e.destroy();
+                }
+            }
+        };
+
+        commandQueue.push(command);
     }
 
     private void guideMissiles() {
