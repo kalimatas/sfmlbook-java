@@ -97,6 +97,11 @@ public class World {
 
         textures.loadTexture(Textures.BULLET, "Media/Textures/Bullet.png");
         textures.loadTexture(Textures.MISSILE, "Media/Textures/Missile.png");
+
+        textures.loadTexture(Textures.HEALTH_REFILL, "Media/Textures/HealthRefill.png");
+        textures.loadTexture(Textures.MISSILE_REFILL, "Media/Textures/MissileRefill.png");
+        textures.loadTexture(Textures.FIRE_SPREAD, "Media/Textures/FireSpread.png");
+        textures.loadTexture(Textures.FIRE_RATE, "Media/Textures/FireRate.png");
     }
 
     private void buildScene() {

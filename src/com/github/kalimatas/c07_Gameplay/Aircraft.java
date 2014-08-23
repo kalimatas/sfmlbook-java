@@ -115,6 +115,22 @@ public class Aircraft extends Entity {
         return Table.get(this.type.ordinal()).speed;
     }
 
+    public void increaseFireRate() {
+        if (fireRateLevel < 10) {
+            ++fireRateLevel;
+        }
+    }
+
+    public void increaseSpread() {
+        if (spreadLevel < 3) {
+            ++spreadLevel;
+        }
+    }
+
+    public void collectMissiles(int count) {
+        missileAmmo += count;
+    }
+
     public void fire() {
         // Only ships with fire interval != 0 are able to fire
         if (Table.get(this.type.ordinal()).fireInterval != Time.ZERO) {

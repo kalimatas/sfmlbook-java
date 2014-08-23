@@ -1,6 +1,7 @@
 package com.github.kalimatas.c07_Gameplay.DataTables;
 
 import com.github.kalimatas.c07_Gameplay.Aircraft;
+import com.github.kalimatas.c07_Gameplay.Pickup;
 import com.github.kalimatas.c07_Gameplay.Projectile;
 import com.github.kalimatas.c07_Gameplay.Textures;
 import org.jsfml.system.Time;
@@ -63,6 +64,52 @@ public class DataTables {
         missile.speed = 150.f;
         missile.texture = Textures.MISSILE;
         data.add(Projectile.Type.MISSILE.ordinal(), missile);
+
+        return data;
+    }
+
+    public static ArrayList<PickupData> initializePickupData() {
+        ArrayList<PickupData> data = new ArrayList<>(Pickup.Type.TYPE_COUNT.ordinal());
+
+        PickupData healthRefill = new PickupData();
+        healthRefill.texture = Textures.HEALTH_REFILL;
+        healthRefill.action = new PickupData.Action() {
+            @Override
+            public void invoke(Aircraft aircraft) {
+                aircraft.repair(25);
+            }
+        };
+        data.add(Pickup.Type.HEALTH_REFILL.ordinal(), healthRefill);
+
+        PickupData missileRefill = new PickupData();
+        missileRefill.texture = Textures.MISSILE_REFILL;
+        missileRefill.action = new PickupData.Action() {
+            @Override
+            public void invoke(Aircraft aircraft) {
+                aircraft.collectMissiles(3);
+            }
+        };
+        data.add(Pickup.Type.MISSILE_REFILL.ordinal(), missileRefill);
+
+        PickupData fireSpread = new PickupData();
+        fireSpread.texture = Textures.FIRE_SPREAD;
+        fireSpread.action = new PickupData.Action() {
+            @Override
+            public void invoke(Aircraft aircraft) {
+                aircraft.increaseSpread();
+            }
+        };
+        data.add(Pickup.Type.FIRE_SPREAD.ordinal(), fireSpread);
+
+        PickupData fireRate = new PickupData();
+        fireRate.texture = Textures.FIRE_RATE;
+        fireRate.action = new PickupData.Action() {
+            @Override
+            public void invoke(Aircraft aircraft) {
+                aircraft.increaseFireRate();
+            }
+        };
+        data.add(Pickup.Type.FIRE_RATE.ordinal(), fireRate);
 
         return data;
     }
