@@ -8,14 +8,31 @@ import org.jsfml.graphics.RenderTarget;
 import org.jsfml.graphics.Sprite;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 public class Pickup extends Entity {
     public enum Type {
-        HEALTH_REFILL,
-        MISSILE_REFILL,
-        FIRE_SPREAD,
-        FIRE_RATE,
-        TYPE_COUNT,
+        HEALTH_REFILL(0),
+        MISSILE_REFILL(1),
+        FIRE_SPREAD(2),
+        FIRE_RATE(3),
+        TYPE_COUNT(4);
+
+        private int typeIndex;
+
+        private Type(final int typeIndex) {
+            this.typeIndex = typeIndex;
+        }
+
+        public static Type getRandom() {
+            int randomTypeIndex = new Random().nextInt(TYPE_COUNT.ordinal());
+            for (Type type : values()) {
+                if (type.typeIndex == randomTypeIndex) {
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException();
+        }
     }
 
     private Type type;

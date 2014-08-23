@@ -4,9 +4,7 @@ import org.jsfml.graphics.*;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.*;
 
 public class World {
     private enum Layer {
@@ -71,8 +69,11 @@ public class World {
         }
         adaptPlayerVelocity();
 
+        // Collision detection and response (may destroy entities)
+        handleCollisions();
+
         // Remove all destroyed entities, create new ones
-        // todo
+        sceneGraph.removeWrecks();
         spawnEnemies();
 
         // Regular update step, adapt position (correct if outside view)
@@ -159,6 +160,57 @@ public class World {
 
         // Add scrolling velocity
         playerAircraft.accelerate(0.f, scrollSpeed);
+    }
+
+    private boolean matchesCategories(SceneNode.Pair colliders, int type1, int type2) {
+        int category1 = colliders.first.getCategory();
+        int category2 = colliders.second.getCategory();
+
+        // Make sure first pair entry has category type1 and second has type2
+        if ((type1 & category1) > 0 && (type2 & category2) > 0) {
+            return true;
+        } else if ((type1 & category2) > 0 && (type2 & category1) > 0) {
+            SceneNode tmp = colliders.first;
+            colliders.first = colliders.second;
+            colliders.second = tmp;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void handleCollisions() {
+        Set<SceneNode.Pair> collisionPairs = new HashSet<>();
+        sceneGraph.checkSceneCollision(sceneGraph, collisionPairs);
+
+        for (SceneNode.Pair pair : collisionPairs) {
+            if (matchesCategories(pair, Category.PLAYER_AIRCRAFT, Category.ENEMY_AIRCRAFT)) {
+                Aircraft player = (Aircraft) pair.first;
+                Aircraft enemy = (Aircraft) pair.second;
+
+                // Collision: Player damage = enemy's remaining HP
+                player.damage(enemy.getHitpoints());
+                enemy.destroy();
+            }
+            else if (matchesCategories(pair, Category.PLAYER_AIRCRAFT, Category.PICKUP)) {
+                Aircraft player = (Aircraft) pair.first;
+                Pickup pickup = (Pickup) pair.second;
+
+                // Apply pickup effect to player, destroy pickup
+                pickup.apply(player);
+                pickup.destroy();
+            }
+            else if (matchesCategories(pair, Category.ENEMY_AIRCRAFT, Category.ALLIED_PROJECTILE)
+                  || matchesCategories(pair, Category.PLAYER_AIRCRAFT, Category.ENEMY_PROJECTILE))
+            {
+                Aircraft aircraft = (Aircraft) pair.first;
+                Projectile projectile = (Projectile) pair.second;
+
+                // Apply projectile damage to aircraft, destroy projectile
+                aircraft.damage(projectile.getDamage());
+                projectile.destroy();
+            }
+        }
     }
 
     private void addEnemies() {

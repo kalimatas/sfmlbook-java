@@ -6,10 +6,21 @@ import org.jsfml.system.Vector2f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class SceneNode extends BasicTransformable
         implements Drawable
 {
+    public class Pair {
+        SceneNode first;
+        SceneNode second;
+
+        public Pair(SceneNode first, SceneNode second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
+
     private List<SceneNode> children = new ArrayList<>();
     private SceneNode parent;
     private int category = Category.NONE;
@@ -39,6 +50,10 @@ public class SceneNode extends BasicTransformable
         // Do nothing by default
     }
 
+    protected FloatRect getBoundingRect() {
+        return new FloatRect(0.f, 0.f, 0.f, 0.f);
+    }
+
     protected void updateChildren(Time dt, CommandQueue commands) {
         for (SceneNode child : children) {
             child.update(dt, commands);
@@ -53,6 +68,9 @@ public class SceneNode extends BasicTransformable
         // Draw node and children with changed transform
         drawCurrent(target, rs);
         drawChildren(target, rs);
+
+        // Draw bounding rectangle - disabled by default
+        //drawBoundingRect(target, states);
     }
 
     protected void drawCurrent(RenderTarget target, RenderStates states) {
@@ -63,6 +81,19 @@ public class SceneNode extends BasicTransformable
         for (SceneNode child : children) {
             child.draw(target, states);
         }
+    }
+
+    protected void drawBoundingRect(RenderTarget target, RenderStates states) {
+        FloatRect rect = getBoundingRect();
+
+        RectangleShape shape = new RectangleShape();
+        shape.setPosition(new Vector2f(rect.left, rect.top));
+        shape.setSize(new Vector2f(rect.width, rect.height));
+        shape.setFillColor(Color.TRANSPARENT);
+        shape.setOutlineColor(Color.GREEN);
+        shape.setOutlineThickness(1.f);
+
+        target.draw(shape);
     }
 
     public Vector2f getWorldPosition() {
@@ -100,9 +131,64 @@ public class SceneNode extends BasicTransformable
         return category;
     }
 
+    public void checkSceneCollision(SceneNode sceneGraph, Set<Pair> collisionPairs) {
+        checkNodeCollision(sceneGraph, collisionPairs);
+
+        for (SceneNode child : sceneGraph.children) {
+            checkSceneCollision(child, collisionPairs);
+        }
+    }
+
+    public void checkNodeCollision(SceneNode node, Set<Pair> collisionPairs) {
+        if (!this.equals(node) && collision(this, node) && !isDestroyed() && !node.isDestroyed()) {
+            boolean hasPair = false;
+
+            for (Pair pair : collisionPairs) {
+                if ((pair.first.equals(this) && pair.second.equals(node))
+                    || (pair.first.equals(node) && pair.second.equals(this)))
+                {
+                    hasPair = true;
+                    break;
+                }
+            }
+
+            if (!hasPair) {
+                collisionPairs.add(new Pair(this, node));
+            }
+        }
+
+        for (SceneNode child : children) {
+            child.checkNodeCollision(node, collisionPairs);
+        }
+    }
+
+    public void removeWrecks() {
+        // Remove all children which request so
+        List<SceneNode> originalChildren = new ArrayList<>(children);
+        for (SceneNode child : originalChildren) {
+            if (child.isMarkedForRemoval()) {
+                children.remove(child);
+            }
+        }
+
+        // Call function recursively for all remaining children
+        for (SceneNode child : children) {
+            child.removeWrecks();
+        }
+    }
+
+    public boolean isMarkedForRemoval() {
+        // By default, remove node if entity is destroyed
+        return isDestroyed();
+    }
+
     public boolean isDestroyed() {
         // By default, scene node needn't be removed
         return false;
+    }
+
+    public boolean collision(final SceneNode lhs, final SceneNode rhs) {
+        return lhs.getBoundingRect().intersection(rhs.getBoundingRect()) != null;
     }
 
     public float distance(final SceneNode lhs, final SceneNode rhs) {

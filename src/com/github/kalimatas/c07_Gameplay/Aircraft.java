@@ -12,6 +12,7 @@ import org.jsfml.system.Vector2f;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Random;
 
 public class Aircraft extends Entity {
     public enum Type {
@@ -29,12 +30,14 @@ public class Aircraft extends Entity {
 
     private boolean isFiring = false;
     private boolean isLaunchingMissile = false;
+    private boolean isMarkedForRemoval = false;
 
     private int fireRateLevel = 1;
     private int spreadLevel = 1;
     private int missileAmmo = 2;
 
     private float travelledDistance = 0.f;
+    private Command dropPickupCommand = new Command();
     private int directionIndex = 0;
     private TextNode healthDisplay;
     private TextNode missileDisplay;
@@ -65,6 +68,14 @@ public class Aircraft extends Entity {
             }
         };
 
+        dropPickupCommand.category = Category.SCENE_AIR_LAYER;
+        dropPickupCommand.commandAction = new CommandAction() {
+            @Override
+            public void invoke(SceneNode node, Time dt) {
+                createPickup(node, textures);
+            }
+        };
+
         healthDisplay = new TextNode(fonts, "");
         attachChild(healthDisplay);
 
@@ -84,6 +95,14 @@ public class Aircraft extends Entity {
 
     @Override
     protected void updateCurrent(Time dt, CommandQueue commands) {
+        // Entity has been destroyed: Possibly drop pickup, mark for removal
+        if (isDestroyed()) {
+            checkPickupDrop(commands);
+
+            isMarkedForRemoval = true;
+            return;
+        }
+
         // Check if bullets or missiles are fired
         checkProjectileLaunch(dt, commands);
 
@@ -101,6 +120,10 @@ public class Aircraft extends Entity {
         } else {
             return Category.ENEMY_AIRCRAFT;
         }
+    }
+
+    public boolean isMarkedForRemoval () {
+        return isMarkedForRemoval;
     }
 
     public boolean isAllied() {
@@ -166,6 +189,12 @@ public class Aircraft extends Entity {
         }
     }
 
+    private void checkPickupDrop(CommandQueue commands) {
+        if (!isAllied() && new Random().nextInt(3) == 0) {
+            commands.push(dropPickupCommand);
+        }
+    }
+
     private void checkProjectileLaunch(Time dt, CommandQueue commands) {
         // Enemies try to fire all the time
         if (!isAllied()) {
@@ -225,6 +254,13 @@ public class Aircraft extends Entity {
         projectile.setVelocity(Vector2f.mul(velocity, sign));
 
         node.attachChild(projectile);
+    }
+
+    public void createPickup(SceneNode node, final ResourceHolder textures) {
+        Pickup pickup = new Pickup(Pickup.Type.getRandom(), textures);
+        pickup.setPosition(getWorldPosition());
+        pickup.setVelocity(0.f, 1.f);
+        node.attachChild(pickup);
     }
 
     private void updateTexts() {
