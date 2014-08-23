@@ -13,6 +13,7 @@ public class GameState extends State {
 
         world = new World(context.window, context.fonts);
         player = context.player;
+        player.setMissionStatus(Player.MissionStatus.MISSION_RUNNING);
     }
 
     @Override
@@ -23,6 +24,14 @@ public class GameState extends State {
     @Override
     public boolean update(Time dt) {
         world.update(dt);
+
+        if (!world.hasAlivePlayer()) {
+            player.setMissionStatus(Player.MissionStatus.MISSION_FAILURE);
+            requestStackPush(States.GAME_OVER);
+        } else if (world.hasPlayerReachedEnd()) {
+            player.setMissionStatus(Player.MissionStatus.MISSION_SUCCESS);
+            requestStackPush(States.GAME_OVER);
+        }
 
         CommandQueue commands = world.getCommandQueue();
         player.handleRealtimeInput(commands);

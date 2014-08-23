@@ -11,6 +11,7 @@ import java.util.Map;
 public class Player {
     private Map<Keyboard.Key, Action> keyBinding = new HashMap<>();
     private Map<Action, Command> actionBinding = new HashMap<>();
+    private MissionStatus currentMissionStatus = MissionStatus.MISSION_RUNNING;
 
     public enum Action {
         MOVE_LEFT(0),
@@ -35,6 +36,12 @@ public class Player {
             }
             throw new IllegalArgumentException();
         }
+    }
+
+    public enum MissionStatus {
+        MISSION_RUNNING,
+        MISSION_SUCCESS,
+        MISSION_FAILURE,
     }
 
     public Player() {
@@ -93,6 +100,14 @@ public class Player {
         }
 
         return Keyboard.Key.UNKNOWN;
+    }
+
+    public void setMissionStatus(MissionStatus status) {
+        currentMissionStatus = status;
+    }
+
+    public MissionStatus getMissionStatus() {
+        return currentMissionStatus;
     }
 
     private void initializeActions() {

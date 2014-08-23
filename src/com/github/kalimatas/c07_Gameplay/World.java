@@ -91,6 +91,14 @@ public class World {
         return commandQueue;
     }
 
+    public boolean hasAlivePlayer() {
+        return !playerAircraft.isMarkedForRemoval();
+    }
+
+    public boolean hasPlayerReachedEnd() {
+        return !worldBounds.contains(playerAircraft.getPosition());
+    }
+
     private void loadTextures() {
         textures.loadTexture(Textures.EAGLE, "Media/Textures/Eagle.png");
         textures.loadTexture(Textures.RAPTOR, "Media/Textures/Raptor.png");

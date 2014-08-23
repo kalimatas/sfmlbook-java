@@ -8,4 +8,5 @@ public enum States {
     LOADING,
     PAUSE,
     SETTINGS,
+    GAME_OVER,
 }
