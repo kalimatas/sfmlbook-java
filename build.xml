@@ -67,6 +67,15 @@
         </antcall>
     </target>
 
+    <target name="07_Gameplay" depends="create-dirs" description="Generate JAR for chapter 7">
+        <echo>Generating JAR for "Chapter 07"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c07_Gameplay" />
+            <param name="chapter.main" value="com.github.kalimatas.c07_Gameplay.Main" />
+            <param name="chapter.executable" value="07_gameplay.jar" />
+        </antcall>
+    </target>
+
     <target name="build">
         <delete dir="${build.dir}/${chapter.dir}" />
         <delete file="${output.dir}/${chapter.executable}" />
