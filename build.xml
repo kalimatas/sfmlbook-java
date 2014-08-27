@@ -76,6 +76,15 @@
         </antcall>
     </target>
 
+    <target name="08_Graphics" depends="create-dirs" description="Generate JAR for chapter 8">
+        <echo>Generating JAR for "Chapter 08"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c08_Graphics" />
+            <param name="chapter.main" value="com.github.kalimatas.c08_Graphics.Main" />
+            <param name="chapter.executable" value="08_graphics.jar" />
+        </antcall>
+    </target>
+
     <target name="build">
         <delete dir="${build.dir}/${chapter.dir}" />
         <delete file="${output.dir}/${chapter.executable}" />
