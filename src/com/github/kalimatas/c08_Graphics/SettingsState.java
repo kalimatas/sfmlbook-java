@@ -23,15 +23,17 @@ public class SettingsState extends State {
         backgroundSprite.setTexture(context.textures.getTexture(Textures.TITLE_SCREEN));
 
         // Build key binding buttons and labels
-        addButtonLabel(Player.Action.MOVE_LEFT, 150.f, "Move Left", context);
-        addButtonLabel(Player.Action.MOVE_RIGHT, 200.f, "Move Right", context);
-        addButtonLabel(Player.Action.MOVE_UP, 250.f, "Move Up", context);
-        addButtonLabel(Player.Action.MOVE_DOWN, 300.f, "Move Down", context);
+        addButtonLabel(Player.Action.MOVE_LEFT, 300.f, "Move Left", context);
+        addButtonLabel(Player.Action.MOVE_RIGHT, 350.f, "Move Right", context);
+        addButtonLabel(Player.Action.MOVE_UP, 400.f, "Move Up", context);
+        addButtonLabel(Player.Action.MOVE_DOWN, 450.f, "Move Down", context);
+        addButtonLabel(Player.Action.FIRE, 500.f, "Fire", context);
+        addButtonLabel(Player.Action.LAUNCH_MISSILE, 550.f, "Missile", context);
 
         updateLabels();
 
         Button backButton = new Button(context.fonts, context.textures);
-        backButton.setPosition(80.f, 375.f);
+        backButton.setPosition(80.f, 620.f);
         backButton.setText("Back");
         backButton.setCallback(new Callback() {
             @Override
