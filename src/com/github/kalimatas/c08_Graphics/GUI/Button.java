@@ -9,22 +9,24 @@ import com.github.kalimatas.c08_Graphics.Textures;
 import com.github.kalimatas.c08_Graphics.Utility;
 
 public class Button extends Component {
+    public enum Type {
+        NORMAL,
+        SELECTED,
+        PRESSED,
+        BUTTON_COUNT,
+    }
+
     private Callback callback;
-    private Texture normalTexture;
-    private Texture selectedTexture;
-    private Texture pressedTexture;
     private Sprite sprite = new Sprite();
     private Text text;
     private boolean isToggle = false;
 
     public Button(final ResourceHolder fonts, final ResourceHolder textures) {
-        normalTexture = textures.getTexture(Textures.BUTTON_NORMAL);
-        selectedTexture = textures.getTexture(Textures.BUTTON_SELECTED);
-        pressedTexture = textures.getTexture(Textures.BUTTON_PRESSED);
+        sprite.setTexture(textures.getTexture(Textures.BUTTONS));
 
-        sprite.setTexture(normalTexture);
+        changeTexture(Type.NORMAL);
+
         FloatRect bounds = sprite.getLocalBounds();
-
         text = new Text("", fonts.getFont(Fonts.MAIN), 16);
         text.setPosition(bounds.width / 2.f, bounds.height / 2.f);
     }
@@ -51,14 +53,14 @@ public class Button extends Component {
     public void select() {
         super.select();
 
-        sprite.setTexture(selectedTexture);
+        changeTexture(Type.SELECTED);
     }
 
     @Override
     public void deselect() {
         super.deselect();
 
-        sprite.setTexture(normalTexture);
+        changeTexture(Type.NORMAL);
     }
 
     @Override
@@ -67,7 +69,7 @@ public class Button extends Component {
 
         // If we are toggle then we should show that the button is pressed and thus "toggled".
         if (isToggle) {
-            sprite.setTexture(pressedTexture);
+            changeTexture(Type.PRESSED);
         }
 
         if (callback != null) {
@@ -87,9 +89,9 @@ public class Button extends Component {
         if (isToggle) {
             // Reset texture to right one depending on if we are selected or not.
             if (isSelected()) {
-                sprite.setTexture(selectedTexture);
+                changeTexture(Type.SELECTED);
             } else {
-                sprite.setTexture(normalTexture);
+                changeTexture(Type.NORMAL);
             }
         }
     }
@@ -104,5 +106,9 @@ public class Button extends Component {
         RenderStates rs = new RenderStates(states, Transform.combine(states.transform, getTransform()));
         target.draw(sprite, rs);
         target.draw(text, rs);
+    }
+
+    private void changeTexture(Type buttonType) {
+        sprite.setTextureRect(new IntRect(0, 50 * buttonType.ordinal(), 200, 50));
     }
 }

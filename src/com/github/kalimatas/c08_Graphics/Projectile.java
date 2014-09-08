@@ -29,7 +29,7 @@ public class Projectile extends Entity {
         super(1);
 
         this.type = type;
-        this.sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture));
+        this.sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture), Table.get(type.ordinal()).textureRect);
 
         Utility.centerOrigin(this.sprite);
     }

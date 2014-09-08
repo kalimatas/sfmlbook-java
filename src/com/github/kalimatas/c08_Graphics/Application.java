@@ -31,9 +31,7 @@ public class Application {
         fonts.loadFont(Fonts.MAIN, "Media/Sansation.ttf");
 
         textures.loadTexture(Textures.TITLE_SCREEN, "Media/Textures/TitleScreen.png");
-        textures.loadTexture(Textures.BUTTON_NORMAL, "Media/Textures/ButtonNormal.png");
-        textures.loadTexture(Textures.BUTTON_SELECTED, "Media/Textures/ButtonSelected.png");
-        textures.loadTexture(Textures.BUTTON_PRESSED, "Media/Textures/ButtonPressed.png");
+        textures.loadTexture(Textures.BUTTONS, "Media/Textures/Buttons.png");
 
         statisticsText.setFont(fonts.getFont(Fonts.MAIN));
         statisticsText.setPosition(5.f, 5.f);

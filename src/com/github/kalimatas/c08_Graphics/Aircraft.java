@@ -48,7 +48,7 @@ public class Aircraft extends Entity {
         super(Table.get(type.ordinal()).hitpoints);
 
         this.type = type;
-        this.sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture));
+        this.sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture), Table.get(type.ordinal()).textureRect);
 
         Utility.centerOrigin(this.sprite);
 

@@ -45,7 +45,7 @@ public class World {
         this.window = window;
         this.fonts = fonts;
         this.worldView = new View(window.getDefaultView().getCenter(), window.getDefaultView().getSize());
-        this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 2000.f);
+        this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 5000.f);
         this.spawnPosition = new Vector2f(worldView.getSize().x / 2.f, worldBounds.height - worldView.getSize().y / 2.f);
 
         loadTextures();
@@ -100,18 +100,11 @@ public class World {
     }
 
     private void loadTextures() {
-        textures.loadTexture(Textures.EAGLE, "Media/Textures/Eagle.png");
-        textures.loadTexture(Textures.RAPTOR, "Media/Textures/Raptor.png");
-        textures.loadTexture(Textures.AVENGER, "Media/Textures/Avenger.png");
-        textures.loadTexture(Textures.DESERT, "Media/Textures/Desert.png");
-
-        textures.loadTexture(Textures.BULLET, "Media/Textures/Bullet.png");
-        textures.loadTexture(Textures.MISSILE, "Media/Textures/Missile.png");
-
-        textures.loadTexture(Textures.HEALTH_REFILL, "Media/Textures/HealthRefill.png");
-        textures.loadTexture(Textures.MISSILE_REFILL, "Media/Textures/MissileRefill.png");
-        textures.loadTexture(Textures.FIRE_SPREAD, "Media/Textures/FireSpread.png");
-        textures.loadTexture(Textures.FIRE_RATE, "Media/Textures/FireRate.png");
+        textures.loadTexture(Textures.ENTITIES, "Media/Textures/Entities.png");
+        textures.loadTexture(Textures.JUNGLE, "Media/Textures/Jungle.png");
+        textures.loadTexture(Textures.EXPLOSION, "Media/Textures/Explosion.png");
+        textures.loadTexture(Textures.PARTICLE, "Media/Textures/Particle.png");
+        textures.loadTexture(Textures.FINISH_LINE, "Media/Textures/FinishLine.png");
     }
 
     private void buildScene() {
@@ -127,14 +120,22 @@ public class World {
         }
 
         // Prepare the tiled background
-        Texture texture = textures.getTexture(Textures.DESERT);
-        IntRect textureRect = new IntRect(worldBounds);
-        texture.setRepeated(true);
+        Texture jungleTexture = textures.getTexture(Textures.JUNGLE);
+        jungleTexture.setRepeated(true);
+
+        float viewHeight = worldView.getSize().y;
+        IntRect textureRect = new IntRect((int) worldBounds.left, (int) worldBounds.top, (int) worldBounds.width, (int) worldBounds.height + (int) viewHeight);
 
         // Add the background sprite to the scene
-        SpriteNode backgroundSprite = new SpriteNode(texture, textureRect);
-        backgroundSprite.setPosition(worldBounds.left, worldBounds.top);
-        sceneLayers[Layer.BACKGROUND.ordinal()].attachChild(backgroundSprite);
+        SpriteNode jungleSprite = new SpriteNode(jungleTexture, textureRect);
+        jungleSprite.setPosition(worldBounds.left, worldBounds.top - viewHeight);
+        sceneLayers[Layer.BACKGROUND.ordinal()].attachChild(jungleSprite);
+
+        // Add the finish line to the scene
+        Texture finishTexture = textures.getTexture(Textures.FINISH_LINE);
+        SpriteNode finishSprite = new SpriteNode(finishTexture);
+        finishSprite.setPosition(0.f, -76.f);
+        sceneLayers[Layer.BACKGROUND.ordinal()].attachChild(finishSprite);
 
         // Add player's aircraft
         playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures, fonts);

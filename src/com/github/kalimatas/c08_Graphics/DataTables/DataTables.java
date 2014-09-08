@@ -4,6 +4,7 @@ import com.github.kalimatas.c08_Graphics.Aircraft;
 import com.github.kalimatas.c08_Graphics.Pickup;
 import com.github.kalimatas.c08_Graphics.Projectile;
 import com.github.kalimatas.c08_Graphics.Textures;
+import org.jsfml.graphics.IntRect;
 import org.jsfml.system.Time;
 
 import java.util.ArrayList;
@@ -16,14 +17,16 @@ public class DataTables {
         eagle.hitpoints = 100;
         eagle.speed = 200.f;
         eagle.fireInterval = Time.getSeconds(1);
-        eagle.texture = Textures.EAGLE;
+        eagle.texture = Textures.ENTITIES;
+        eagle.textureRect = new IntRect(0, 0, 48, 64);
         data.add(Aircraft.Type.EAGLE.ordinal(), eagle);
 
         AircraftData raptor = new AircraftData();
         raptor.hitpoints = 20;
         raptor.speed = 80.f;
         raptor.fireInterval = Time.ZERO;
-        raptor.texture = Textures.RAPTOR;
+        raptor.texture = Textures.ENTITIES;
+        raptor.textureRect = new IntRect(144, 0, 84, 64);
         raptor.directions.addLast(new Direction(+45.f, 80.f));
         raptor.directions.addLast(new Direction(-45.f, 160.f));
         raptor.directions.addLast(new Direction(+45.f, 80.f));
@@ -33,7 +36,8 @@ public class DataTables {
         avenger.hitpoints = 40;
         avenger.speed = 50.f;
         avenger.fireInterval = Time.getSeconds(2);
-        avenger.texture = Textures.AVENGER;
+        avenger.texture = Textures.ENTITIES;
+        avenger.textureRect = new IntRect(228, 0, 60, 59);
         avenger.directions.addLast(new Direction(+45.f, 50.f));
         avenger.directions.addLast(new Direction(0.f, 50.f));
         avenger.directions.addLast(new Direction(-45.f, 100.f));
@@ -50,19 +54,22 @@ public class DataTables {
         ProjectileData alliedBullet = new ProjectileData();
         alliedBullet.damage = 10;
         alliedBullet.speed = 300.f;
-        alliedBullet.texture = Textures.BULLET;
+        alliedBullet.texture = Textures.ENTITIES;
+        alliedBullet.textureRect = new IntRect(175, 64, 3, 14);
         data.add(Projectile.Type.ALLIED_BULLET.ordinal(), alliedBullet);
 
         ProjectileData enemyBullet = new ProjectileData();
         enemyBullet.damage = 10;
         enemyBullet.speed = 300.f;
-        enemyBullet.texture = Textures.BULLET;
+        enemyBullet.texture = Textures.ENTITIES;
+        enemyBullet.textureRect = new IntRect(178, 64, 3, 14);
         data.add(Projectile.Type.ENEMY_BULLET.ordinal(), enemyBullet);
 
         ProjectileData missile = new ProjectileData();
         missile.damage = 200;
         missile.speed = 150.f;
-        missile.texture = Textures.MISSILE;
+        missile.texture = Textures.ENTITIES;
+        missile.textureRect = new IntRect(160, 64, 15, 32);
         data.add(Projectile.Type.MISSILE.ordinal(), missile);
 
         return data;
@@ -72,7 +79,8 @@ public class DataTables {
         ArrayList<PickupData> data = new ArrayList<>(Pickup.Type.TYPE_COUNT.ordinal());
 
         PickupData healthRefill = new PickupData();
-        healthRefill.texture = Textures.HEALTH_REFILL;
+        healthRefill.texture = Textures.ENTITIES;
+        healthRefill.textureRect = new IntRect(0, 64, 40, 40);
         healthRefill.action = new PickupData.Action() {
             @Override
             public void invoke(Aircraft aircraft) {
@@ -82,7 +90,8 @@ public class DataTables {
         data.add(Pickup.Type.HEALTH_REFILL.ordinal(), healthRefill);
 
         PickupData missileRefill = new PickupData();
-        missileRefill.texture = Textures.MISSILE_REFILL;
+        missileRefill.texture = Textures.ENTITIES;
+        missileRefill.textureRect = new IntRect(40, 64, 40, 40);
         missileRefill.action = new PickupData.Action() {
             @Override
             public void invoke(Aircraft aircraft) {
@@ -92,7 +101,8 @@ public class DataTables {
         data.add(Pickup.Type.MISSILE_REFILL.ordinal(), missileRefill);
 
         PickupData fireSpread = new PickupData();
-        fireSpread.texture = Textures.FIRE_SPREAD;
+        fireSpread.texture = Textures.ENTITIES;
+        fireSpread.textureRect = new IntRect(80, 64, 40, 40);
         fireSpread.action = new PickupData.Action() {
             @Override
             public void invoke(Aircraft aircraft) {
@@ -102,7 +112,8 @@ public class DataTables {
         data.add(Pickup.Type.FIRE_SPREAD.ordinal(), fireSpread);
 
         PickupData fireRate = new PickupData();
-        fireRate.texture = Textures.FIRE_RATE;
+        fireRate.texture = Textures.ENTITIES;
+        fireRate.textureRect = new IntRect(120, 64, 40, 40);
         fireRate.action = new PickupData.Action() {
             @Override
             public void invoke(Aircraft aircraft) {
