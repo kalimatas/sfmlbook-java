@@ -1,9 +1,7 @@
 package com.github.kalimatas.c08_Graphics.DataTables;
 
-import com.github.kalimatas.c08_Graphics.Aircraft;
-import com.github.kalimatas.c08_Graphics.Pickup;
-import com.github.kalimatas.c08_Graphics.Projectile;
-import com.github.kalimatas.c08_Graphics.Textures;
+import com.github.kalimatas.c08_Graphics.*;
+import org.jsfml.graphics.Color;
 import org.jsfml.graphics.IntRect;
 import org.jsfml.system.Time;
 
@@ -121,6 +119,22 @@ public class DataTables {
             }
         };
         data.add(Pickup.Type.FIRE_RATE.ordinal(), fireRate);
+
+        return data;
+    }
+
+    public static ArrayList<ParticleData> initializeParticleData() {
+        ArrayList<ParticleData> data = new ArrayList<>(Particle.Type.PARTICLE_COUNT.ordinal());
+
+        ParticleData propellant = new ParticleData();
+        propellant.color = new Color(255, 255, 50);
+        propellant.lifetime = Time.getSeconds(0.6f);
+        data.add(Particle.Type.PROPELLANT.ordinal(), propellant);
+
+        ParticleData smoke = new ParticleData();
+        smoke.color = new Color(50, 50, 50);
+        smoke.lifetime = Time.getSeconds(4.0f);
+        data.add(Particle.Type.SMOKE.ordinal(), smoke);
 
         return data;
     }
