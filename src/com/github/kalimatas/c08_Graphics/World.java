@@ -9,7 +9,8 @@ import java.util.*;
 public class World {
     private enum Layer {
         BACKGROUND,
-        AIR,
+        LOWER_AIR,
+        UPPER_AIR,
         LAYERCOUNT,
     }
 
@@ -41,10 +42,10 @@ public class World {
         }
     }
 
-    public World(RenderWindow window, ResourceHolder fonts) {
-        this.window = window;
+    public World(RenderWindow outputTarget, ResourceHolder fonts) {
+        this.window = outputTarget;
         this.fonts = fonts;
-        this.worldView = new View(window.getDefaultView().getCenter(), window.getDefaultView().getSize());
+        this.worldView = new View(outputTarget.getDefaultView().getCenter(), outputTarget.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 5000.f);
         this.spawnPosition = new Vector2f(worldView.getSize().x / 2.f, worldBounds.height - worldView.getSize().y / 2.f);
 
@@ -110,7 +111,7 @@ public class World {
     private void buildScene() {
         // Initialize the different layers
         for (int i = 0; i < Layer.LAYERCOUNT.ordinal(); i++) {
-            int category = i == Layer.AIR.ordinal() ? Category.SCENE_AIR_LAYER : Category.NONE;
+            int category = i == Layer.LOWER_AIR.ordinal() ? Category.SCENE_AIR_LAYER : Category.NONE;
 
             SceneNode layer = new SceneNode();
             layer.setCategory(category);
@@ -137,10 +138,18 @@ public class World {
         finishSprite.setPosition(0.f, -76.f);
         sceneLayers[Layer.BACKGROUND.ordinal()].attachChild(finishSprite);
 
+        // Add particle node to the scene
+        ParticleNode smokeNode = new ParticleNode(Particle.Type.SMOKE, textures);
+        sceneLayers[Layer.LOWER_AIR.ordinal()].attachChild(smokeNode);
+
+        // Add propellant particle node to the scene
+        ParticleNode propellantNode = new ParticleNode(Particle.Type.PROPELLANT, textures);
+        sceneLayers[Layer.LOWER_AIR.ordinal()].attachChild(propellantNode);
+
         // Add player's aircraft
         playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures, fonts);
         playerAircraft.setPosition(spawnPosition);
-        sceneLayers[Layer.AIR.ordinal()].attachChild(playerAircraft);
+        sceneLayers[Layer.UPPER_AIR.ordinal()].attachChild(playerAircraft);
 
         // Add enemy aircraft
         addEnemies();
@@ -225,14 +234,31 @@ public class World {
 
     private void addEnemies() {
         // Add enemies to the spawn point container
-        addEnemy(Aircraft.Type.RAPTOR,    0.f,  500.f);
-        addEnemy(Aircraft.Type.RAPTOR,    0.f, 1000.f);
-        addEnemy(Aircraft.Type.RAPTOR, +100.f, 1100.f);
-        addEnemy(Aircraft.Type.RAPTOR, -100.f, 1100.f);
-        addEnemy(Aircraft.Type.AVENGER, -70.f, 1400.f);
-        addEnemy(Aircraft.Type.AVENGER, -70.f, 1600.f);
-        addEnemy(Aircraft.Type.AVENGER,  70.f, 1400.f);
-        addEnemy(Aircraft.Type.AVENGER,  70.f, 1600.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 500.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 1000.f);
+        addEnemy(Aircraft.Type.RAPTOR, +100.f, 1150.f);
+        addEnemy(Aircraft.Type.RAPTOR, -100.f, 1150.f);
+        addEnemy(Aircraft.Type.AVENGER, 70.f, 1500.f);
+        addEnemy(Aircraft.Type.AVENGER, -70.f, 1500.f);
+        addEnemy(Aircraft.Type.AVENGER, -70.f, 1710.f);
+        addEnemy(Aircraft.Type.AVENGER, 70.f, 1700.f);
+        addEnemy(Aircraft.Type.AVENGER, 30.f, 1850.f);
+        addEnemy(Aircraft.Type.RAPTOR, 300.f, 2200.f);
+        addEnemy(Aircraft.Type.RAPTOR, -300.f, 2200.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 2200.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 2500.f);
+        addEnemy(Aircraft.Type.AVENGER, -300.f, 2700.f);
+        addEnemy(Aircraft.Type.AVENGER, -300.f, 2700.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 3000.f);
+        addEnemy(Aircraft.Type.RAPTOR, 250.f, 3250.f);
+        addEnemy(Aircraft.Type.RAPTOR, -250.f, 3250.f);
+        addEnemy(Aircraft.Type.AVENGER, 0.f, 3500.f);
+        addEnemy(Aircraft.Type.AVENGER, 0.f, 3700.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 3800.f);
+        addEnemy(Aircraft.Type.AVENGER, 0.f, 4000.f);
+        addEnemy(Aircraft.Type.AVENGER, -200.f, 4200.f);
+        addEnemy(Aircraft.Type.RAPTOR, 200.f, 4200.f);
+        addEnemy(Aircraft.Type.RAPTOR, 0.f, 4400.f);
 
         // Sort all enemies according to their y value, such that lower enemies are checked first for spawning
         Collections.sort(enemySpawnPoints, new Comparator<SpawnPoint>() {
@@ -262,7 +288,7 @@ public class World {
             enemy.setPosition(spawn.x, spawn.y);
             enemy.rotate(180.f);
 
-            sceneLayers[Layer.AIR.ordinal()].attachChild(enemy);
+            sceneLayers[Layer.UPPER_AIR.ordinal()].attachChild(enemy);
         }
     }
 

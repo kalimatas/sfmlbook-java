@@ -32,6 +32,17 @@ public class Projectile extends Entity {
         this.sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture), Table.get(type.ordinal()).textureRect);
 
         Utility.centerOrigin(this.sprite);
+
+        // Add particle system for missiles
+        if (isGuided()) {
+            EmitterNode smoke = new EmitterNode(Particle.Type.SMOKE);
+            smoke.setPosition(0.f, getBoundingRect().height / 2.f);
+            attachChild(smoke);
+
+            EmitterNode propellant = new EmitterNode(Particle.Type.PROPELLANT);
+            propellant.setPosition(0.f, getBoundingRect().height / 2.f);
+            attachChild(propellant);
+        }
     }
 
     public void guideTowards(Vector2f position) {
