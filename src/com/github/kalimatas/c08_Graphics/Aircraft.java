@@ -9,6 +9,7 @@ import org.jsfml.graphics.RenderTarget;
 import org.jsfml.graphics.Sprite;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
+import org.jsfml.system.Vector2i;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -24,13 +25,15 @@ public class Aircraft extends Entity {
 
     private Type type;
     private Sprite sprite;
+    private Animation explosion;
     private Command fireCommand = new Command();
     private Command missileCommand = new Command();
     private Time fireCountdown = Time.ZERO;
 
     private boolean isFiring = false;
     private boolean isLaunchingMissile = false;
-    private boolean isMarkedForRemoval = false;
+    private boolean showExplostion = true;
+    private boolean spawnedPickup = false;
 
     private int fireRateLevel = 1;
     private int spreadLevel = 1;
@@ -48,9 +51,15 @@ public class Aircraft extends Entity {
         super(Table.get(type.ordinal()).hitpoints);
 
         this.type = type;
-        this.sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture), Table.get(type.ordinal()).textureRect);
+        sprite = new Sprite(textures.getTexture(Table.get(type.ordinal()).texture), Table.get(type.ordinal()).textureRect);
 
-        Utility.centerOrigin(this.sprite);
+        explosion = new Animation(textures.getTexture(Textures.EXPLOSION));
+        explosion.setFrameSize(new Vector2i(256, 256));
+        explosion.setNumFrames(16);
+        explosion.setDuration(Time.getSeconds(1));
+
+        Utility.centerOrigin(sprite);
+        Utility.centerOrigin(explosion);
 
         fireCommand.category = Category.SCENE_AIR_LAYER;
         fireCommand.commandAction = new CommandAction() {
@@ -90,16 +99,23 @@ public class Aircraft extends Entity {
 
     @Override
     public void drawCurrent(RenderTarget target, RenderStates states) {
-        target.draw(sprite, states);
+        if (isDestroyed() && showExplostion) {
+            target.draw(explosion, states);
+        } else {
+            target.draw(sprite, states);
+        }
     }
 
     @Override
     protected void updateCurrent(Time dt, CommandQueue commands) {
+        // Update texts and roll animation
+        updateTexts();
+        // todo: roll animation
+
         // Entity has been destroyed: Possibly drop pickup, mark for removal
         if (isDestroyed()) {
             checkPickupDrop(commands);
-
-            isMarkedForRemoval = true;
+            explosion.update(dt);
             return;
         }
 
@@ -109,9 +125,6 @@ public class Aircraft extends Entity {
         // Update enemy movement pattern; apply velocity
         updateMovementPattern(dt);
         super.updateCurrent(dt, commands);
-
-        // Update texts
-        updateTexts();
     }
 
     public int getCategory() {
@@ -123,7 +136,12 @@ public class Aircraft extends Entity {
     }
 
     public boolean isMarkedForRemoval () {
-        return isMarkedForRemoval;
+        return isDestroyed() && (explosion.isFinished() || !showExplostion);
+    }
+
+    public void remove() {
+        super.remove();
+        showExplostion = false;
     }
 
     public boolean isAllied() {
@@ -190,9 +208,11 @@ public class Aircraft extends Entity {
     }
 
     private void checkPickupDrop(CommandQueue commands) {
-        if (!isAllied() && new Random().nextInt(3) == 0) {
+        if (!isAllied() && new Random().nextInt(3) == 0 && !spawnedPickup) {
             commands.push(dropPickupCommand);
         }
+
+        spawnedPickup = true;
     }
 
     private void checkProjectileLaunch(Time dt, CommandQueue commands) {

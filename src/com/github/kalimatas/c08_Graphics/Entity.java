@@ -55,6 +55,10 @@ abstract public class Entity extends SceneNode {
         hitpoints = 0;
     }
 
+    public void remove() {
+        destroy();
+    }
+
     public boolean isDestroyed() {
         return hitpoints <= 0;
     }
