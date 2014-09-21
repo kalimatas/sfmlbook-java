@@ -3,10 +3,7 @@ package com.github.kalimatas.c08_Graphics;
 import com.github.kalimatas.c08_Graphics.DataTables.AircraftData;
 import com.github.kalimatas.c08_Graphics.DataTables.DataTables;
 import com.github.kalimatas.c08_Graphics.DataTables.Direction;
-import org.jsfml.graphics.FloatRect;
-import org.jsfml.graphics.RenderStates;
-import org.jsfml.graphics.RenderTarget;
-import org.jsfml.graphics.Sprite;
+import org.jsfml.graphics.*;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 import org.jsfml.system.Vector2i;
@@ -110,7 +107,7 @@ public class Aircraft extends Entity {
     protected void updateCurrent(Time dt, CommandQueue commands) {
         // Update texts and roll animation
         updateTexts();
-        // todo: roll animation
+        updateRollAnimation();
 
         // Entity has been destroyed: Possibly drop pickup, mark for removal
         if (isDestroyed()) {
@@ -294,6 +291,24 @@ public class Aircraft extends Entity {
             } else {
                 missileDisplay.setString("M: " + missileAmmo);
             }
+        }
+    }
+
+    private void updateRollAnimation() {
+        if (Table.get(type.ordinal()).hasRollAnimation) {
+            IntRect textureRect = Table.get(type.ordinal()).textureRect;
+            int left = textureRect.left;
+
+            // Roll left: Texture rect offset once
+            if (getVelocity().x < 0.f) {
+                left += textureRect.width;
+            }
+            // Roll right: Texture rect offset twice
+            else if (getVelocity().x > 0.f) {
+                left += 2 * textureRect.width;
+            }
+
+            sprite.setTextureRect(new IntRect(left, textureRect.top, textureRect.width, textureRect.height));
         }
     }
 }

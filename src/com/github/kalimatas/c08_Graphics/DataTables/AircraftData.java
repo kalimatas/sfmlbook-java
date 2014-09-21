@@ -13,4 +13,5 @@ public class AircraftData {
     public IntRect textureRect;
     public Time fireInterval;
     public LinkedList<Direction> directions = new LinkedList<>();
+    public boolean hasRollAnimation;
 }

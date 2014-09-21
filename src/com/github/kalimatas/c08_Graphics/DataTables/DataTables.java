@@ -17,6 +17,7 @@ public class DataTables {
         eagle.fireInterval = Time.getSeconds(1);
         eagle.texture = Textures.ENTITIES;
         eagle.textureRect = new IntRect(0, 0, 48, 64);
+        eagle.hasRollAnimation = true;
         data.add(Aircraft.Type.EAGLE.ordinal(), eagle);
 
         AircraftData raptor = new AircraftData();
@@ -28,6 +29,7 @@ public class DataTables {
         raptor.directions.addLast(new Direction(+45.f, 80.f));
         raptor.directions.addLast(new Direction(-45.f, 160.f));
         raptor.directions.addLast(new Direction(+45.f, 80.f));
+        raptor.hasRollAnimation = false;
         data.add(Aircraft.Type.RAPTOR.ordinal(), raptor);
 
         AircraftData avenger = new AircraftData();
@@ -41,6 +43,7 @@ public class DataTables {
         avenger.directions.addLast(new Direction(-45.f, 100.f));
         avenger.directions.addLast(new Direction(0.f, 50.f));
         avenger.directions.addLast(new Direction(+45.f, 50.f));
+        avenger.hasRollAnimation = false;
         data.add(Aircraft.Type.AVENGER.ordinal(), avenger);
 
         return data;
