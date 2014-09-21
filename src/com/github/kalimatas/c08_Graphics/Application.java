@@ -2,6 +2,7 @@ package com.github.kalimatas.c08_Graphics;
 
 import org.jsfml.graphics.RenderWindow;
 import org.jsfml.graphics.Text;
+import org.jsfml.graphics.TextureCreationException;
 import org.jsfml.system.Clock;
 import org.jsfml.system.Time;
 import org.jsfml.window.VideoMode;
@@ -41,7 +42,7 @@ public class Application {
         stateStack.pushState(States.TITLE);
     }
 
-    public void run() {
+    public void run() throws TextureCreationException {
         Clock clock = new Clock();
         Time timeSinceLastUpdate = Time.ZERO;
 
@@ -65,7 +66,7 @@ public class Application {
         }
     }
 
-    private void processInput() {
+    private void processInput() throws TextureCreationException {
         for (Event event : window.pollEvents()) {
             stateStack.handleEvent(event);
 
@@ -75,11 +76,11 @@ public class Application {
         }
     }
 
-    private void update(Time dt) {
+    private void update(Time dt) throws TextureCreationException {
         stateStack.update(dt);
     }
 
-    private void render() {
+    private void render() throws TextureCreationException {
         window.clear();
 
         stateStack.draw();

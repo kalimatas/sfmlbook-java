@@ -1,5 +1,6 @@
 package com.github.kalimatas.c08_Graphics;
 
+import org.jsfml.graphics.TextureCreationException;
 import org.jsfml.system.Time;
 import org.jsfml.window.Keyboard;
 import org.jsfml.window.event.Event;
@@ -8,7 +9,7 @@ public class GameState extends State {
     private World world;
     private Player player;
 
-    public GameState(StateStack stack, Context context) {
+    public GameState(StateStack stack, Context context) throws TextureCreationException {
         super(stack, context);
 
         world = new World(context.window, context.fonts);
@@ -17,7 +18,7 @@ public class GameState extends State {
     }
 
     @Override
-    public void draw() {
+    public void draw() throws TextureCreationException {
         world.draw();
     }
 

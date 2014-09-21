@@ -1,5 +1,6 @@
 package com.github.kalimatas.c08_Graphics;
 
+import org.jsfml.graphics.TextureCreationException;
 import org.jsfml.system.Time;
 import org.jsfml.window.event.Event;
 
@@ -28,7 +29,7 @@ public class StateStack {
         // Instead we just create a new State with "createState" method.
     }
 
-    public void update(Time dt) {
+    public void update(Time dt) throws TextureCreationException {
         ListIterator<State> it = stack.listIterator(stack.size());
         while (it.hasPrevious()) {
             if (!it.previous().update(dt)) {
@@ -39,13 +40,13 @@ public class StateStack {
         applyPendingChanges();
     }
 
-    public void draw() {
+    public void draw() throws TextureCreationException {
         for (State state : stack) {
             state.draw();
         }
     }
 
-    public void handleEvent(final Event event) {
+    public void handleEvent(final Event event) throws TextureCreationException {
         ListIterator<State> it = stack.listIterator(stack.size());
         while (it.hasPrevious()) {
             if (!it.previous().handleEvent(event)) {
@@ -72,7 +73,7 @@ public class StateStack {
         return stack.isEmpty();
     }
 
-    private State createState(States stateId) {
+    private State createState(States stateId) throws TextureCreationException {
         switch (stateId) {
             case TITLE:
                 return new TitleState(this, context);
@@ -91,7 +92,7 @@ public class StateStack {
         }
     }
 
-    private void applyPendingChanges() {
+    private void applyPendingChanges() throws TextureCreationException {
         for (PendingChange change : pendingList) {
             switch (change.action) {
                 case PUSH:

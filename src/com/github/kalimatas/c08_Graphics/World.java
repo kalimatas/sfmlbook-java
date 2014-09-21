@@ -14,7 +14,8 @@ public class World {
         LAYERCOUNT,
     }
 
-    private RenderWindow window;
+    private RenderTarget target;
+    private RenderTexture sceneTexture = new RenderTexture();
     private View worldView;
     private ResourceHolder textures = new ResourceHolder();
     private ResourceHolder fonts;
@@ -30,6 +31,8 @@ public class World {
     private LinkedList<SpawnPoint> enemySpawnPoints = new LinkedList<>();
     private LinkedList<Aircraft> activeEnemies = new LinkedList<>();
 
+    private BloomEffect bloomEffect = new BloomEffect();
+
     private class SpawnPoint {
         Aircraft.Type type;
         float x;
@@ -42,8 +45,10 @@ public class World {
         }
     }
 
-    public World(RenderWindow outputTarget, ResourceHolder fonts) {
-        this.window = outputTarget;
+    public World(RenderTarget outputTarget, ResourceHolder fonts) throws TextureCreationException {
+        this.target = outputTarget;
+        this.sceneTexture.create(this.target.getSize().x, this.target.getSize().y);
+
         this.fonts = fonts;
         this.worldView = new View(outputTarget.getDefaultView().getCenter(), outputTarget.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 5000.f);
@@ -83,9 +88,17 @@ public class World {
         adaptPlayerPosition();
     }
 
-    public void draw() {
-        window.setView(worldView);
-        window.draw(sceneGraph);
+    public void draw() throws TextureCreationException {
+        if (PostEffect.isSupported()) {
+            sceneTexture.clear();
+            sceneTexture.setView(worldView);
+            sceneTexture.draw(sceneGraph);
+            sceneTexture.display();
+            bloomEffect.apply(sceneTexture, target);
+        } else {
+            target.setView(worldView);
+            target.draw(sceneGraph);
+        }
     }
 
     public CommandQueue getCommandQueue() {

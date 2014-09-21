@@ -1,6 +1,8 @@
 package com.github.kalimatas.c08_Graphics;
 
 import org.jsfml.graphics.Font;
+import org.jsfml.graphics.Shader;
+import org.jsfml.graphics.ShaderSourceException;
 import org.jsfml.graphics.Texture;
 
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.util.HashMap;
 public class ResourceHolder {
     private HashMap<Textures, Texture> textureMap = new HashMap<>();
     private HashMap<Fonts, Font> fontMap = new HashMap<>();
+    private HashMap<Shaders, Shader> shaderMap = new HashMap<>();
 
     public void loadTexture(Textures id, final String filename) {
         Texture texture = new Texture();
@@ -41,5 +44,23 @@ public class ResourceHolder {
     public Font getFont(Fonts id) {
         return fontMap.get(id);
     }
-}
 
+    public void loadShader(Shaders id, final String filename, final String secondParam) {
+        Shader shader = new Shader();
+        try {
+            // Need to load from stream in order to load from JAR
+            shader.loadFromStream(
+                    getClass().getResourceAsStream(filename),
+                    getClass().getResourceAsStream(secondParam)
+            );
+        } catch (IOException | ShaderSourceException e) {
+            throw new RuntimeException("ResourceHolder::load - Failed to load shader " + filename);
+        }
+
+        shaderMap.put(id, shader);
+    }
+
+    public Shader getShader(Shaders id) {
+        return shaderMap.get(id);
+    }
+}
