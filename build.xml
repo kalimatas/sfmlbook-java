@@ -85,6 +85,15 @@
         </antcall>
     </target>
 
+    <target name="09_Audio" depends="create-dirs" description="Generate JAR for chapter 9">
+        <echo>Generating JAR for "Chapter 09"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c09_Audio" />
+            <param name="chapter.main" value="com.github.kalimatas.c09_Audio.Main" />
+            <param name="chapter.executable" value="09_audio.jar" />
+        </antcall>
+    </target>
+
     <target name="build">
         <delete dir="${build.dir}/${chapter.dir}" />
         <delete file="${output.dir}/${chapter.executable}" />
