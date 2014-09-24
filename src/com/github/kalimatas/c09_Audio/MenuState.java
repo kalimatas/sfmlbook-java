@@ -17,7 +17,7 @@ public class MenuState extends State {
         Texture texture = context.textures.getTexture(Textures.TITLE_SCREEN);
         backgroundSprite.setTexture(texture);
 
-        Button playButton = new Button(context.fonts, context.textures);
+        Button playButton = new Button(context);
         playButton.setPosition(100, 250);
         playButton.setText("Play");
         playButton.setCallback(new Callback() {
@@ -28,7 +28,7 @@ public class MenuState extends State {
             }
         });
 
-        Button settingsButton = new Button(context.fonts, context.textures);
+        Button settingsButton = new Button(context);
         settingsButton.setPosition(100, 300);
         settingsButton.setText("Settings");
         settingsButton.setCallback(new Callback() {
@@ -38,7 +38,7 @@ public class MenuState extends State {
             }
         });
 
-        Button exitButton = new Button(context.fonts, context.textures);
+        Button exitButton = new Button(context);
         exitButton.setPosition(100, 350);
         exitButton.setText("Exit");
         exitButton.setCallback(new Callback() {

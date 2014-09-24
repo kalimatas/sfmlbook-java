@@ -1,12 +1,8 @@
 package com.github.kalimatas.c09_Audio.GUI;
 
+import com.github.kalimatas.c09_Audio.*;
 import org.jsfml.graphics.*;
 import org.jsfml.window.event.Event;
-
-import com.github.kalimatas.c09_Audio.Fonts;
-import com.github.kalimatas.c09_Audio.ResourceHolder;
-import com.github.kalimatas.c09_Audio.Textures;
-import com.github.kalimatas.c09_Audio.Utility;
 
 public class Button extends Component {
     public enum Type {
@@ -20,15 +16,18 @@ public class Button extends Component {
     private Sprite sprite = new Sprite();
     private Text text;
     private boolean isToggle = false;
+    private SoundPlayer sounds;
 
-    public Button(final ResourceHolder fonts, final ResourceHolder textures) {
-        sprite.setTexture(textures.getTexture(Textures.BUTTONS));
+    public Button(State.Context context) {
+        sprite.setTexture(context.textures.getTexture(Textures.BUTTONS));
 
         changeTexture(Type.NORMAL);
 
         FloatRect bounds = sprite.getLocalBounds();
-        text = new Text("", fonts.getFont(Fonts.MAIN), 16);
+        text = new Text("", context.fonts.getFont(Fonts.MAIN), 16);
         text.setPosition(bounds.width / 2.f, bounds.height / 2.f);
+
+        sounds = context.sounds;
     }
 
     public void setCallback(Callback callback) {
@@ -80,6 +79,8 @@ public class Button extends Component {
         if (!isToggle) {
             deactivate();
         }
+
+        sounds.play(SoundEffects.BUTTON);
     }
 
     @Override

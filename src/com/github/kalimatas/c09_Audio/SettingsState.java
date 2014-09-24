@@ -32,7 +32,7 @@ public class SettingsState extends State {
 
         updateLabels();
 
-        Button backButton = new Button(context.fonts, context.textures);
+        Button backButton = new Button(context);
         backButton.setPosition(80.f, 620.f);
         backButton.setText("Back");
         backButton.setCallback(new Callback() {
@@ -93,7 +93,7 @@ public class SettingsState extends State {
     }
 
     private void addButtonLabel(Player.Action action, float y, final String text, Context context) {
-        Button button = new Button(context.fonts, context.textures);
+        Button button = new Button(context);
         button.setPosition(80.f, y);
         button.setText(text);
         button.setToggle(true);

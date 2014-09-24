@@ -24,7 +24,7 @@ public class PauseState extends State {
         Utility.centerOrigin(pausedText);
         pausedText.setPosition(0.5f * viewSize.x, 0.4f * viewSize.y);
 
-        Button returnButton = new Button(context.fonts, context.textures);
+        Button returnButton = new Button(context);
         returnButton.setPosition(0.5f * viewSize.x -100, 0.4f * viewSize.y + 75);
         returnButton.setText("Return");
         returnButton.setCallback(new Callback() {
@@ -38,7 +38,7 @@ public class PauseState extends State {
             }
         });
 
-        Button backToMenuButton = new Button(context.fonts, context.textures);
+        Button backToMenuButton = new Button(context);
         backToMenuButton.setPosition(0.5f * viewSize.x - 100, 0.4f * viewSize.y + 125);
         backToMenuButton.setText("Back to menu");
         backToMenuButton.setCallback(new Callback() {

@@ -18,6 +18,7 @@ public class Application {
     private Player player = new Player();
 
     private MusicPlayer music = new MusicPlayer();
+    private SoundPlayer sounds = new SoundPlayer();
     private StateStack stateStack;
 
     private Text statisticsText = new Text();
@@ -26,7 +27,7 @@ public class Application {
 
     public Application() {
         window = new RenderWindow(new VideoMode(1024, 768), "Audio", WindowStyle.CLOSE);
-        stateStack = new StateStack(new State.Context(window, textures, fonts, player, music));
+        stateStack = new StateStack(new State.Context(window, textures, fonts, player, music, sounds));
 
         window.setKeyRepeatEnabled(false);
         window.setVerticalSyncEnabled(true);

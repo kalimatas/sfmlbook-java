@@ -1,5 +1,6 @@
 package com.github.kalimatas.c09_Audio;
 
+import org.jsfml.audio.SoundBuffer;
 import org.jsfml.graphics.Font;
 import org.jsfml.graphics.Shader;
 import org.jsfml.graphics.ShaderSourceException;
@@ -12,6 +13,7 @@ public class ResourceHolder {
     private HashMap<Textures, Texture> textureMap = new HashMap<>();
     private HashMap<Fonts, Font> fontMap = new HashMap<>();
     private HashMap<Shaders, Shader> shaderMap = new HashMap<>();
+    private HashMap<SoundEffects, SoundBuffer> soundEffectsMap = new HashMap<>();
 
     public void loadTexture(Textures id, final String filename) {
         Texture texture = new Texture();
@@ -62,5 +64,21 @@ public class ResourceHolder {
 
     public Shader getShader(Shaders id) {
         return shaderMap.get(id);
+    }
+
+    public void loadSoundEffect(SoundEffects id, final String filename) {
+        SoundBuffer sound = new SoundBuffer();
+        try {
+            // Need to load from stream in order to load from JAR
+            sound.loadFromStream(getClass().getResourceAsStream(filename));
+        } catch (IOException e) {
+            throw new RuntimeException("ResourceHolder::load - Failed to load sound effect " + filename);
+        }
+
+        soundEffectsMap.put(id, sound);
+    }
+
+    public SoundBuffer getSoundEffect(SoundEffects id) {
+        return soundEffectsMap.get(id);
     }
 }
