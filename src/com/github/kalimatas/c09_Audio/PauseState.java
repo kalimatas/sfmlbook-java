@@ -31,6 +31,10 @@ public class PauseState extends State {
             @Override
             public void invoke() {
                 requestStackPop();
+
+                // Resume mission music. As there is no destructor method in Java,
+                // we put this code here.
+                getContext().music.setPaused(false);
             }
         });
 
@@ -47,6 +51,8 @@ public class PauseState extends State {
 
         GUIContainer.pack(returnButton);
         GUIContainer.pack(backToMenuButton);
+
+        getContext().music.setPaused(true);
     }
 
     @Override

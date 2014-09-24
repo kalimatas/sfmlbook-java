@@ -15,6 +15,9 @@ public class GameState extends State {
         world = new World(context.window, context.fonts);
         player = context.player;
         player.setMissionStatus(Player.MissionStatus.MISSION_RUNNING);
+
+        // Play game theme
+        context.music.play(Musics.MISSION_THEME);
     }
 
     @Override

@@ -14,12 +14,14 @@ abstract public class State {
         public ResourceHolder textures;
         public ResourceHolder fonts;
         public Player player;
+        public MusicPlayer music;
 
-        public Context(RenderWindow window, ResourceHolder textures, ResourceHolder fonts, Player player) {
+        public Context(RenderWindow window, ResourceHolder textures, ResourceHolder fonts, Player player, MusicPlayer music) {
             this.window = window;
             this.textures = textures;
             this.fonts = fonts;
             this.player = player;
+            this.music = music;
         }
     }
 

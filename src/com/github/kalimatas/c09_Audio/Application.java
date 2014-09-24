@@ -17,6 +17,7 @@ public class Application {
     private ResourceHolder fonts = new ResourceHolder();
     private Player player = new Player();
 
+    private MusicPlayer music = new MusicPlayer();
     private StateStack stateStack;
 
     private Text statisticsText = new Text();
@@ -25,9 +26,10 @@ public class Application {
 
     public Application() {
         window = new RenderWindow(new VideoMode(1024, 768), "Audio", WindowStyle.CLOSE);
-        stateStack = new StateStack(new State.Context(window, textures, fonts, player));
+        stateStack = new StateStack(new State.Context(window, textures, fonts, player, music));
 
         window.setKeyRepeatEnabled(false);
+        window.setVerticalSyncEnabled(true);
 
         fonts.loadFont(Fonts.MAIN, "Media/Sansation.ttf");
 
@@ -40,6 +42,8 @@ public class Application {
 
         registerStates();
         stateStack.pushState(States.TITLE);
+
+        music.setVolume(25.f);
     }
 
     public void run() throws TextureCreationException {

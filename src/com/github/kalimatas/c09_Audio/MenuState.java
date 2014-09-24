@@ -51,6 +51,9 @@ public class MenuState extends State {
         GUIContainer.pack(playButton);
         GUIContainer.pack(settingsButton);
         GUIContainer.pack(exitButton);
+
+        // Play menu theme
+        context.music.play(Musics.MENU_THEME);
     }
 
     @Override
