@@ -94,6 +94,15 @@
         </antcall>
     </target>
 
+    <target name="10_Network" depends="create-dirs" description="Generate JAR for chapter 10">
+        <echo>Generating JAR for "Chapter 10"</echo>
+        <antcall target="build">
+            <param name="chapter.dir" value="com/github/kalimatas/c10_Network" />
+            <param name="chapter.main" value="com.github.kalimatas.c10_Network.Main" />
+            <param name="chapter.executable" value="10_network.jar" />
+        </antcall>
+    </target>
+
     <target name="build">
         <delete dir="${build.dir}/${chapter.dir}" />
         <delete file="${output.dir}/${chapter.executable}" />
