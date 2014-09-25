@@ -12,7 +12,7 @@ public class GameState extends State {
     public GameState(StateStack stack, Context context) throws TextureCreationException {
         super(stack, context);
 
-        world = new World(context.window, context.fonts);
+        world = new World(context.window, context.fonts, context.sounds);
         player = context.player;
         player.setMissionStatus(Player.MissionStatus.MISSION_RUNNING);
 

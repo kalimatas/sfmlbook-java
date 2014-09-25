@@ -30,6 +30,7 @@ public class Aircraft extends Entity {
     private boolean isFiring = false;
     private boolean isLaunchingMissile = false;
     private boolean showExplostion = true;
+    private boolean playedExplosionSound = false;
     private boolean spawnedPickup = false;
 
     private int fireRateLevel = 1;
@@ -113,6 +114,15 @@ public class Aircraft extends Entity {
         if (isDestroyed()) {
             checkPickupDrop(commands);
             explosion.update(dt);
+
+            // Play explosion sound only once
+            if (!playedExplosionSound) {
+                SoundEffects soundEffect = Utility.randomInt(2) == 0 ? SoundEffects.EXPLOSION1 : SoundEffects.EXPLOSION2;
+                playLocalSound(commands, soundEffect);
+
+                playedExplosionSound = true;
+            }
+
             return;
         }
 
@@ -183,6 +193,22 @@ public class Aircraft extends Entity {
         }
     }
 
+    public void playLocalSound(CommandQueue commands, SoundEffects effect) {
+        final Vector2f worldPosition = getWorldPosition();
+        final SoundEffects finalEffect = effect;
+
+        Command command = new Command();
+        command.category = Category.SOUND_EFFECT;
+        command.commandAction = new CommandAction<SoundNode>() {
+            @Override
+            public void invoke(SoundNode node, Time dt) {
+                node.playSound(finalEffect, worldPosition);
+            }
+        };
+
+        commands.push(command);
+    }
+
     private void updateMovementPattern(Time dt) {
         // Enemy airplane: Movement pattern
         final LinkedList<Direction> directions = Table.get(this.type.ordinal()).directions;
@@ -222,6 +248,8 @@ public class Aircraft extends Entity {
         if (isFiring && fireCountdown.asMicroseconds() <= Time.ZERO.asMicroseconds()) {
             // Interval expired: We can fire a new bullet
             commands.push(fireCommand);
+            playLocalSound(commands, isAllied() ? SoundEffects.ALLIED_GUNFIRE : SoundEffects.ENEMY_GUNFIRE);
+
             fireCountdown = Time.add(
                     fireCountdown,
                     Time.div(Table.get(type.ordinal()).fireInterval, fireRateLevel + 1.f)
@@ -236,6 +264,8 @@ public class Aircraft extends Entity {
         // Check for missile launch
         if (isLaunchingMissile) {
             commands.push(missileCommand);
+            playLocalSound(commands, SoundEffects.LAUNCH_MISSILE);
+
             isLaunchingMissile = false;
         }
     }

@@ -19,6 +19,7 @@ public class World {
     private View worldView;
     private ResourceHolder textures = new ResourceHolder();
     private ResourceHolder fonts;
+    private SoundPlayer sounds;
     private SceneNode sceneGraph = new SceneNode();
     private SceneNode[] sceneLayers = new SceneNode[Layer.LAYERCOUNT.ordinal()];
     private CommandQueue commandQueue = new CommandQueue();
@@ -45,11 +46,12 @@ public class World {
         }
     }
 
-    public World(RenderTarget outputTarget, ResourceHolder fonts) throws TextureCreationException {
+    public World(RenderTarget outputTarget, ResourceHolder fonts, SoundPlayer sounds) throws TextureCreationException {
         this.target = outputTarget;
         this.sceneTexture.create(this.target.getSize().x, this.target.getSize().y);
 
         this.fonts = fonts;
+        this.sounds = sounds;
         this.worldView = new View(outputTarget.getDefaultView().getCenter(), outputTarget.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 5000.f);
         this.spawnPosition = new Vector2f(worldView.getSize().x / 2.f, worldBounds.height - worldView.getSize().y / 2.f);
@@ -86,6 +88,8 @@ public class World {
         // Regular update step, adapt position (correct if outside view)
         sceneGraph.update(dt, commandQueue);
         adaptPlayerPosition();
+
+        updateSounds();
     }
 
     public void draw() throws TextureCreationException {
@@ -119,6 +123,14 @@ public class World {
         textures.loadTexture(Textures.EXPLOSION, "Media/Textures/Explosion.png");
         textures.loadTexture(Textures.PARTICLE, "Media/Textures/Particle.png");
         textures.loadTexture(Textures.FINISH_LINE, "Media/Textures/FinishLine.png");
+    }
+
+    private void updateSounds() {
+        // Set listener's position to player position
+        sounds.setListenerPosition(playerAircraft.getWorldPosition());
+
+        // Remove unused sounds
+        sounds.removeStoppedSounds();
     }
 
     private void buildScene() {
@@ -158,6 +170,10 @@ public class World {
         // Add propellant particle node to the scene
         ParticleNode propellantNode = new ParticleNode(Particle.Type.PROPELLANT, textures);
         sceneLayers[Layer.LOWER_AIR.ordinal()].attachChild(propellantNode);
+
+        // Add sound effect node
+        SoundNode soundNode = new SoundNode(sounds);
+        sceneGraph.attachChild(soundNode);
 
         // Add player's aircraft
         playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures, fonts);
@@ -231,6 +247,7 @@ public class World {
                 // Apply pickup effect to player, destroy pickup
                 pickup.apply(player);
                 pickup.destroy();
+                player.playLocalSound(commandQueue, SoundEffects.COLLECT_PICKUP);
             }
             else if (matchesCategories(pair, Category.ENEMY_AIRCRAFT, Category.ALLIED_PROJECTILE)
                   || matchesCategories(pair, Category.PLAYER_AIRCRAFT, Category.ENEMY_PROJECTILE))
