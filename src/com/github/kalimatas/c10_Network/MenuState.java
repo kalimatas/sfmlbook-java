@@ -18,7 +18,7 @@ public class MenuState extends State {
         backgroundSprite.setTexture(texture);
 
         Button playButton = new Button(context);
-        playButton.setPosition(100, 250);
+        playButton.setPosition(100, 300);
         playButton.setText("Play");
         playButton.setCallback(new Callback() {
             @Override
@@ -28,8 +28,30 @@ public class MenuState extends State {
             }
         });
 
+        Button hostPlayButton = new Button(context);
+        hostPlayButton.setPosition(100, 350);
+        hostPlayButton.setText("Host");
+        hostPlayButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStackPop();
+                requestStackPush(States.HOST_GAME);
+            }
+        });
+
+        Button joinPlayButton = new Button(context);
+        joinPlayButton.setPosition(100, 400);
+        joinPlayButton.setText("Join");
+        joinPlayButton.setCallback(new Callback() {
+            @Override
+            public void invoke() {
+                requestStackPop();
+                requestStackPush(States.JOIN_GAME);
+            }
+        });
+
         Button settingsButton = new Button(context);
-        settingsButton.setPosition(100, 300);
+        settingsButton.setPosition(100, 450);
         settingsButton.setText("Settings");
         settingsButton.setCallback(new Callback() {
             @Override
@@ -39,7 +61,7 @@ public class MenuState extends State {
         });
 
         Button exitButton = new Button(context);
-        exitButton.setPosition(100, 350);
+        exitButton.setPosition(100, 500);
         exitButton.setText("Exit");
         exitButton.setCallback(new Callback() {
             @Override
@@ -49,6 +71,8 @@ public class MenuState extends State {
         });
 
         GUIContainer.pack(playButton);
+        GUIContainer.pack(hostPlayButton);
+        GUIContainer.pack(joinPlayButton);
         GUIContainer.pack(settingsButton);
         GUIContainer.pack(exitButton);
 
