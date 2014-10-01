@@ -79,12 +79,12 @@ public class StateStack {
                 return new TitleState(this, context);
             case MENU:
                 return new MenuState(this, context);
-            case SETTINGS:
-                return new SettingsState(this, context);
             case GAME:
                 return new GameState(this, context);
             case PAUSE:
                 return new PauseState(this, context);
+            case SETTINGS:
+                return new SettingsState(this, context);
             case GAME_OVER:
                 return new GameOverState(this, context, "Mission Failed!");
             case MISSION_SUCCESS:

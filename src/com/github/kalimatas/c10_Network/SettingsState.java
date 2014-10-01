@@ -23,12 +23,14 @@ public class SettingsState extends State {
         backgroundSprite.setTexture(context.textures.getTexture(Textures.TITLE_SCREEN));
 
         // Build key binding buttons and labels
-        addButtonLabel(Player.Action.MOVE_LEFT, 300.f, "Move Left", context);
-        addButtonLabel(Player.Action.MOVE_RIGHT, 350.f, "Move Right", context);
-        addButtonLabel(Player.Action.MOVE_UP, 400.f, "Move Up", context);
-        addButtonLabel(Player.Action.MOVE_DOWN, 450.f, "Move Down", context);
-        addButtonLabel(Player.Action.FIRE, 500.f, "Fire", context);
-        addButtonLabel(Player.Action.LAUNCH_MISSILE, 550.f, "Missile", context);
+        for (int x = 0; x < 2; x++) {
+            addButtonLabel(Player.Action.MOVE_LEFT, x, 0, "Move Left", context);
+            addButtonLabel(Player.Action.MOVE_RIGHT, x, 1, "Move Right", context);
+            addButtonLabel(Player.Action.MOVE_UP, x, 2, "Move Up", context);
+            addButtonLabel(Player.Action.MOVE_DOWN, x, 3, "Move Down", context);
+            addButtonLabel(Player.Action.FIRE, x, 4, "Fire", context);
+            addButtonLabel(Player.Action.LAUNCH_MISSILE, x, 5, "Missile", context);
+        }
 
         updateLabels();
 
@@ -63,17 +65,26 @@ public class SettingsState extends State {
         boolean isKeyBinding = false;
 
         // Iterate through all key binding buttons to see if they are being pressed, waiting for the user to enter a key
-        for (int action = 0; action < Player.Action.ACTION_COUNT.ordinal(); action++) {
-            if (bindingButtons.get(action).isActive()) {
+        for (int i = 0; i < 2 * Player.Action.ACTION_COUNT.ordinal(); i++) {
+            if (bindingButtons.get(i).isActive()) {
                 isKeyBinding = true;
                 if (event.type == Event.Type.KEY_RELEASED) {
-                    getContext().player.assignKey(Player.Action.getAction(action), event.asKeyEvent().key);
-                    bindingButtons.get(action).deactivate();
+                    // Player 1
+                    if (i < Player.Action.ACTION_COUNT.ordinal()) {
+                        getContext().keys1.assignKey(Player.Action.getAction(i), event.asKeyEvent().key);
+                    }
+                    // Player 2
+                    else {
+                        getContext().keys2.assignKey(Player.Action.getAction(i - Player.Action.ACTION_COUNT.ordinal()), event.asKeyEvent().key);
+                    }
+
+                    bindingButtons.get(i).deactivate();
                 }
                 break;
             }
         }
 
+        // If pressed button changed key bindings, update labels; otherwise consider other buttons in container
         if (isKeyBinding) {
             updateLabels();
         } else {
@@ -84,24 +95,32 @@ public class SettingsState extends State {
     }
 
     private void updateLabels() {
-        Player player = getContext().player;
-
         for (int i = 0; i < Player.Action.ACTION_COUNT.ordinal(); i++) {
-            Keyboard.Key key = player.getAssignedKey(Player.Action.getAction(i));
-            bindingLabels.get(i).setText(key.toString());
+            Player.Action action = Player.Action.getAction(i);
+
+            // Get keys of both players
+            Keyboard.Key key1 = getContext().keys1.getAssignedKey(action);
+            Keyboard.Key key2 = getContext().keys2.getAssignedKey(action);
+
+            // Assign both key strings to labels
+            bindingLabels.get(i).setText(key1.toString());
+            bindingLabels.get(i + Player.Action.ACTION_COUNT.ordinal()).setText(key2.toString());
         }
     }
 
-    private void addButtonLabel(Player.Action action, float y, final String text, Context context) {
+    private void addButtonLabel(Player.Action action, int x, int y, final String text, Context context) {
+        // For x==0, start at index 0, otherwise start at half of array
+        int index = action.ordinal() + Player.Action.ACTION_COUNT.ordinal() * x;
+
         Button button = new Button(context);
-        button.setPosition(80.f, y);
+        button.setPosition(400.f * x + 80.f, 50.f * y + 300.f);
         button.setText(text);
         button.setToggle(true);
-        bindingButtons.add(action.ordinal(), button);
+        bindingButtons.add(index, button);
 
         Label label = new Label("", context.fonts);
-        label.setPosition(300.f, y + 15.f);
-        bindingLabels.add(action.ordinal(), label);
+        label.setPosition(400.f * x + 300.f, 50.f * y + 315.f);
+        bindingLabels.add(index, label);
 
         GUIContainer.pack(button);
         GUIContainer.pack(label);
