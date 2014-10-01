@@ -27,12 +27,16 @@ public class World {
     private FloatRect worldBounds;
     private Vector2f spawnPosition;
     private float scrollSpeed = -50.f;
-    private Aircraft playerAircraft;
+    private float scrollSpeedCompensation = 1.f;
+    private LinkedList<Aircraft> playerAircrafts = new LinkedList<>();
 
     private LinkedList<SpawnPoint> enemySpawnPoints = new LinkedList<>();
     private LinkedList<Aircraft> activeEnemies = new LinkedList<>();
 
     private BloomEffect bloomEffect = new BloomEffect();
+
+    // todo: NetworkNode
+    private boolean networkedWorld;
 
     private class SpawnPoint {
         Aircraft.Type type;
@@ -46,12 +50,13 @@ public class World {
         }
     }
 
-    public World(RenderTarget outputTarget, ResourceHolder fonts, SoundPlayer sounds) throws TextureCreationException {
+    public World(RenderTarget outputTarget, ResourceHolder fonts, SoundPlayer sounds, boolean networked) throws TextureCreationException {
         this.target = outputTarget;
         this.sceneTexture.create(this.target.getSize().x, this.target.getSize().y);
 
         this.fonts = fonts;
         this.sounds = sounds;
+        this.networkedWorld = networked;
         this.worldView = new View(outputTarget.getDefaultView().getCenter(), outputTarget.getDefaultView().getSize());
         this.worldBounds = new FloatRect(0.f, 0.f, worldView.getSize().x, 5000.f);
         this.spawnPosition = new Vector2f(worldView.getSize().x / 2.f, worldBounds.height - worldView.getSize().y / 2.f);
@@ -63,10 +68,16 @@ public class World {
         this.worldView.setCenter(this.spawnPosition);
     }
 
+    public void setWorldScrollCompensation(float compensation) {
+        this.scrollSpeedCompensation = compensation;
+    }
+
     public void update(Time dt) {
         // Scroll the world, reset player velocity
-        worldView.move(0.f, scrollSpeed * dt.asSeconds());
-        playerAircraft.setVelocity(0.f, 0.f);
+        worldView.move(0.f, scrollSpeed * dt.asSeconds() * scrollSpeedCompensation);
+        for (Aircraft a : playerAircrafts) {
+            a.setVelocity(0.f, 0.f);
+        }
 
         // Setup commands to destroy entities, and guide missiles
         destroyEntetiesOutsideView();
@@ -80,6 +91,14 @@ public class World {
 
         // Collision detection and response (may destroy entities)
         handleCollisions();
+
+        // Remove aircrafts that were destroyed (World::removeWrecks() only destroys the entities, not the pointers in playerAircraft)
+        for (Iterator<Aircraft> itr = playerAircrafts.iterator(); itr.hasNext(); ) {
+            Aircraft aircraft = itr.next();
+            if (aircraft.isMarkedForRemoval()) {
+                itr.remove();
+            }
+        }
 
         // Remove all destroyed entities, create new ones
         sceneGraph.removeWrecks();
@@ -109,12 +128,41 @@ public class World {
         return commandQueue;
     }
 
+    public Aircraft getAircraft(Integer identifier) {
+        for (Aircraft a : playerAircrafts) {
+            if (a.getIdentifier().equals(identifier)) {
+                return a;
+            }
+        }
+
+        return null;
+    }
+
+    public void removeAircraft(Integer identifier) {
+        Aircraft aircraft = getAircraft(identifier);
+        if (aircraft != null) {
+            aircraft.destroy();
+            playerAircrafts.remove(aircraft);
+        }
+    }
+
+    public Aircraft addAircraft(Integer identifier) {
+        Aircraft player = new Aircraft(Aircraft.Type.EAGLE, textures, fonts);
+        player.setPosition(worldView.getCenter());
+        player.setIdentifier(identifier);
+
+        playerAircrafts.addLast(player);
+        sceneLayers[Layer.UPPER_AIR.ordinal()].attachChild(player);
+        return player;
+    }
+
     public boolean hasAlivePlayer() {
-        return !playerAircraft.isMarkedForRemoval();
+        return playerAircrafts.size() > 0;
     }
 
     public boolean hasPlayerReachedEnd() {
-        return !worldBounds.contains(playerAircraft.getPosition());
+        Aircraft aircraft = getAircraft(1);
+        return aircraft != null && !worldBounds.contains(aircraft.getPosition());
     }
 
     private void loadTextures() {
@@ -126,8 +174,24 @@ public class World {
     }
 
     private void updateSounds() {
+        Vector2f listenerPosition = new Vector2f(0.f, 0.f);
+
+        // 0 players (multiplayer mode, until server is connected) -> view center
+        if (playerAircrafts.isEmpty()) {
+            listenerPosition = worldView.getCenter();
+        }
+
+        // 1 or more players -> mean position between all aircrafts
+        else {
+            for (Aircraft aircraft : playerAircrafts) {
+                listenerPosition = Vector2f.add(listenerPosition, aircraft.getWorldPosition());
+            }
+
+            listenerPosition = Vector2f.div(listenerPosition, playerAircrafts.size());
+        }
+
         // Set listener's position to player position
-        sounds.setListenerPosition(playerAircraft.getWorldPosition());
+        sounds.setListenerPosition(listenerPosition);
 
         // Remove unused sounds
         sounds.removeStoppedSounds();
@@ -175,10 +239,10 @@ public class World {
         SoundNode soundNode = new SoundNode(sounds);
         sceneGraph.attachChild(soundNode);
 
-        // Add player's aircraft
-        playerAircraft = new Aircraft(Aircraft.Type.EAGLE, textures, fonts);
-        playerAircraft.setPosition(spawnPosition);
-        sceneLayers[Layer.UPPER_AIR.ordinal()].attachChild(playerAircraft);
+        // Add network node, if necessary
+        if (networkedWorld) {
+            // todo
+        }
 
         // Add enemy aircraft
         addEnemies();
@@ -189,25 +253,29 @@ public class World {
         FloatRect viewBounds = getViewBounds();
         final float borderDistance = 40.f;
 
-        Vector2f position = playerAircraft.getPosition();
-        float xPosition = Math.max(position.x, viewBounds.left + borderDistance);
-        xPosition = Math.min(xPosition, viewBounds.left + viewBounds.width - borderDistance);
-        float yPosition = Math.max(position.y, viewBounds.top + borderDistance);
-        yPosition = Math.min(yPosition, viewBounds.top + viewBounds.height - borderDistance);
+        for (Aircraft aircraft : playerAircrafts) {
+            Vector2f position = aircraft.getPosition();
+            float xPosition = Math.max(position.x, viewBounds.left + borderDistance);
+            xPosition = Math.min(xPosition, viewBounds.left + viewBounds.width - borderDistance);
+            float yPosition = Math.max(position.y, viewBounds.top + borderDistance);
+            yPosition = Math.min(yPosition, viewBounds.top + viewBounds.height - borderDistance);
 
-        playerAircraft.setPosition(xPosition, yPosition);
+            aircraft.setPosition(xPosition, yPosition);
+        }
     }
 
     private void adaptPlayerVelocity() {
-        Vector2f velocity = playerAircraft.getVelocity();
+        for (Aircraft aircraft : playerAircrafts) {
+            Vector2f velocity = aircraft.getVelocity();
 
-        // If moving diagonally, reduce velocity (to have always same velocity)
-        if (velocity.x != 0.f && velocity.y != 0.f) {
-            playerAircraft.setVelocity(Vector2f.div(velocity, (float)Math.sqrt(2.f)));
+            // If moving diagonally, reduce velocity (to have always same velocity)
+            if (velocity.x != 0.f && velocity.y != 0.f) {
+                aircraft.setVelocity(Vector2f.div(velocity, (float) Math.sqrt(2.f)));
+            }
+
+            // Add scrolling velocity
+            aircraft.accelerate(0.f, scrollSpeed);
         }
-
-        // Add scrolling velocity
-        playerAircraft.accelerate(0.f, scrollSpeed);
     }
 
     private boolean matchesCategories(SceneNode.Pair colliders, int type1, int type2) {
@@ -263,6 +331,10 @@ public class World {
     }
 
     private void addEnemies() {
+        if (networkedWorld) {
+            return;
+        }
+
         // Add enemies to the spawn point container
         addEnemy(Aircraft.Type.RAPTOR, 0.f, 500.f);
         addEnemy(Aircraft.Type.RAPTOR, 0.f, 1000.f);
@@ -317,6 +389,9 @@ public class World {
             Aircraft enemy = new Aircraft(spawn.type, textures, fonts);
             enemy.setPosition(spawn.x, spawn.y);
             enemy.rotate(180.f);
+            if (networkedWorld) {
+                enemy.disablePickups();
+            }
 
             sceneLayers[Layer.UPPER_AIR.ordinal()].attachChild(enemy);
         }

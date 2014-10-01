@@ -81,6 +81,10 @@ public class StateStack {
                 return new MenuState(this, context);
             case GAME:
                 return new GameState(this, context);
+            case HOST_GAME:
+                return new MultiplayerGameState(this, context, true);
+            case JOIN_GAME:
+                return new MultiplayerGameState(this, context, false);
             case PAUSE:
                 return new PauseState(this, context);
             case SETTINGS:
