@@ -111,29 +111,27 @@ public class Player {
     }
 
     private void initializeActions() {
-        final float playerSpeed = 200.f;
-
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(-playerSpeed, 0.f);
+            command.commandAction = new AircraftMover(-1, 0);
             actionBinding.put(Action.MOVE_LEFT, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(playerSpeed, 0.f);
+            command.commandAction = new AircraftMover(+1, 0);
             actionBinding.put(Action.MOVE_RIGHT, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(0.f, -playerSpeed);
+            command.commandAction = new AircraftMover(0, -1);
             actionBinding.put(Action.MOVE_UP, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(0.f, playerSpeed);
+            command.commandAction = new AircraftMover(0, +1);
             actionBinding.put(Action.MOVE_DOWN, command);
         }
 
@@ -183,6 +181,6 @@ class AircraftMover implements CommandAction<Aircraft> {
 
     @Override
     public void invoke(Aircraft aircraft, Time dt) {
-        aircraft.accelerate(velocity);
+        aircraft.accelerate(Vector2f.mul(velocity, aircraft.getMaxSpeed()));
     }
 }
