@@ -32,6 +32,7 @@ public class Aircraft extends Entity {
     private boolean showExplostion = true;
     private boolean explosionBegan = false;
     private boolean spawnedPickup = false;
+    private boolean pickupsEnabled = true;
 
     private int fireRateLevel = 1;
     private int spreadLevel = 1;
@@ -97,6 +98,14 @@ public class Aircraft extends Entity {
         updateTexts();
     }
 
+    public int getMissileAmmo() {
+        return missileAmmo;
+    }
+
+    public void setMissileAmmo(int ammo) {
+        missileAmmo = ammo;
+    }
+
     @Override
     public void drawCurrent(RenderTarget target, RenderStates states) {
         if (isDestroyed() && showExplostion) {
@@ -104,6 +113,10 @@ public class Aircraft extends Entity {
         } else {
             target.draw(sprite, states);
         }
+    }
+
+    public void disablePickups() {
+        pickupsEnabled = false;
     }
 
     @Override
@@ -121,6 +134,11 @@ public class Aircraft extends Entity {
             if (!explosionBegan) {
                 SoundEffects soundEffect = Utility.randomInt(2) == 0 ? SoundEffects.EXPLOSION1 : SoundEffects.EXPLOSION2;
                 playLocalSound(commands, soundEffect);
+
+                // Emit network game action for enemy explosions
+                if (!isAllied()) {
+                    // todo
+                }
 
                 explosionBegan = true;
             }
@@ -241,7 +259,9 @@ public class Aircraft extends Entity {
     }
 
     private void checkPickupDrop(CommandQueue commands) {
-        if (!isAllied() && new Random().nextInt(3) == 0 && !spawnedPickup) {
+        // Drop pickup, if enemy airplane, with probability 1/3, if pickup not yet dropped
+        // and if not in network mode (where pickups are dropped via packets)
+        if (!isAllied() && new Random().nextInt(3) == 0 && !spawnedPickup && pickupsEnabled) {
             commands.push(dropPickupCommand);
         }
 
