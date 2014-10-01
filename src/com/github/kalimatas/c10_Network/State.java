@@ -13,17 +13,22 @@ abstract public class State {
         public RenderWindow window;
         public ResourceHolder textures;
         public ResourceHolder fonts;
-        public Player player;
         public MusicPlayer music;
         public SoundPlayer sounds;
+        public KeyBinding keys1;
+        public KeyBinding keys2;
 
-        public Context(RenderWindow window, ResourceHolder textures, ResourceHolder fonts, Player player, MusicPlayer music, SoundPlayer sounds) {
+        public Context(RenderWindow window, ResourceHolder textures,
+                       ResourceHolder fonts, MusicPlayer music, SoundPlayer sounds,
+                       KeyBinding keys1, KeyBinding keys2)
+        {
             this.window = window;
             this.textures = textures;
             this.fonts = fonts;
-            this.player = player;
             this.music = music;
             this.sounds = sounds;
+            this.keys1 = keys1;
+            this.keys2 = keys2;
         }
     }
 
@@ -53,4 +58,8 @@ abstract public class State {
     protected Context getContext() {
         return context;
     }
+
+    public void onActivate() {}
+
+    public void onDestroy() {}
 }
