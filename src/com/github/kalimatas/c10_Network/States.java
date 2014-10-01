@@ -9,4 +9,5 @@ public enum States {
     PAUSE,
     SETTINGS,
     GAME_OVER,
+    MISSION_SUCCESS,
 }

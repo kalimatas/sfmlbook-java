@@ -86,7 +86,9 @@ public class StateStack {
             case PAUSE:
                 return new PauseState(this, context);
             case GAME_OVER:
-                return new GameOverState(this, context);
+                return new GameOverState(this, context, "Mission Failed!");
+            case MISSION_SUCCESS:
+                return new GameOverState(this, context, "Mission Successful!");
             default:
                 throw new InvalidParameterException();
         }

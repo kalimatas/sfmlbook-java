@@ -9,19 +9,14 @@ public class GameOverState extends State {
     private Text gameOverText = new Text();
     private Time elapsedTime = Time.ZERO;
 
-    public GameOverState(StateStack stack, Context context) {
+    public GameOverState(StateStack stack, Context context, final String text) {
         super(stack, context);
 
         Font font = context.fonts.getFont(Fonts.MAIN);
         Vector2f windowSize = new Vector2f(context.window.getSize());
 
         gameOverText.setFont(font);
-        if (context.player.getMissionStatus() == Player.MissionStatus.MISSION_FAILURE) {
-            gameOverText.setString("Mission failed!");
-        } else {
-            gameOverText.setString("Mission successful!");
-        }
-
+        gameOverText.setString(text);
         gameOverText.setCharacterSize(70);
         Utility.centerOrigin(gameOverText);
         gameOverText.setPosition(0.5f * windowSize.x, 0.4f * windowSize.y);

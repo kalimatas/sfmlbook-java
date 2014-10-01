@@ -35,7 +35,7 @@ public class GameState extends State {
             requestStackPush(States.GAME_OVER);
         } else if (world.hasPlayerReachedEnd()) {
             player.setMissionStatus(Player.MissionStatus.MISSION_SUCCESS);
-            requestStackPush(States.GAME_OVER);
+            requestStackPush(States.MISSION_SUCCESS);
         }
 
         CommandQueue commands = world.getCommandQueue();
