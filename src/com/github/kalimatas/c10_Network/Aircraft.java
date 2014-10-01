@@ -30,7 +30,7 @@ public class Aircraft extends Entity {
     private boolean isFiring = false;
     private boolean isLaunchingMissile = false;
     private boolean showExplostion = true;
-    private boolean playedExplosionSound = false;
+    private boolean explosionBegan = false;
     private boolean spawnedPickup = false;
 
     private int fireRateLevel = 1;
@@ -42,6 +42,8 @@ public class Aircraft extends Entity {
     private int directionIndex = 0;
     private TextNode healthDisplay;
     private TextNode missileDisplay;
+
+    private Integer identifier;
 
     private static ArrayList<AircraftData> Table = DataTables.initializeAircraftData();
 
@@ -116,11 +118,11 @@ public class Aircraft extends Entity {
             explosion.update(dt);
 
             // Play explosion sound only once
-            if (!playedExplosionSound) {
+            if (!explosionBegan) {
                 SoundEffects soundEffect = Utility.randomInt(2) == 0 ? SoundEffects.EXPLOSION1 : SoundEffects.EXPLOSION2;
                 playLocalSound(commands, soundEffect);
 
-                playedExplosionSound = true;
+                explosionBegan = true;
             }
 
             return;
@@ -207,6 +209,14 @@ public class Aircraft extends Entity {
         };
 
         commands.push(command);
+    }
+
+    public Integer getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(Integer identifier) {
+        this.identifier = identifier;
     }
 
     private void updateMovementPattern(Time dt) {

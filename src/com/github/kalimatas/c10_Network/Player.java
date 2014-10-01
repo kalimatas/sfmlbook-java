@@ -2,16 +2,20 @@ package com.github.kalimatas.c10_Network;
 
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
-import org.jsfml.window.Keyboard;
 import org.jsfml.window.event.Event;
 
+import java.net.Socket;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 public class Player {
-    private Map<Keyboard.Key, Action> keyBinding = new HashMap<>();
+    private final KeyBinding keyBinding;
     private Map<Action, Command> actionBinding = new HashMap<>();
+    private Map<Action, Boolean> actionProxies = new HashMap<>();
     private MissionStatus currentMissionStatus = MissionStatus.MISSION_RUNNING;
+    private Integer identifier;
+    private Socket socket;
 
     public enum Action {
         MOVE_LEFT(0),
@@ -44,14 +48,10 @@ public class Player {
         MISSION_FAILURE,
     }
 
-    public Player() {
-        // Set initial key bindings
-        keyBinding.put(Keyboard.Key.LEFT, Action.MOVE_LEFT);
-        keyBinding.put(Keyboard.Key.RIGHT, Action.MOVE_RIGHT);
-        keyBinding.put(Keyboard.Key.DOWN, Action.MOVE_DOWN);
-        keyBinding.put(Keyboard.Key.UP, Action.MOVE_UP);
-        keyBinding.put(Keyboard.Key.SPACE, Action.FIRE);
-        keyBinding.put(Keyboard.Key.M, Action.LAUNCH_MISSILE);
+    public Player(Socket socket, Integer identifier, final KeyBinding binding) {
+        this.keyBinding = binding;
+        this.identifier = identifier;
+        this.socket = socket;
 
         // Set initial action bindings
         initializeActions();
@@ -65,41 +65,75 @@ public class Player {
     }
 
     public void handleEvent(final Event event, CommandQueue commands) {
+        // Event
         if (event.type == Event.Type.KEY_PRESSED) {
-            // Check if pressed key appears in key binding, trigger command if so
-            Action foundAction = keyBinding.get(event.asKeyEvent().key);
-            if (foundAction != null && !isRealtimeAction(foundAction)) {
-                commands.push(actionBinding.get(foundAction));
+            if (keyBinding != null) {
+                Action action = keyBinding.checkAction(event.asKeyEvent().key);
+                if (action != null && !keyBinding.isRealtimeAction(action)) {
+                    // Network connected -> send event over network
+                    if (socket != null) {
+                        // todo
+                    }
+
+                    // Network disconnected -> local event
+                    else {
+                        commands.push(actionBinding.get(action));
+                    }
+                }
             }
+        }
+
+        // Realtime change (network connected)
+        if ((event.type == Event.Type.KEY_PRESSED || event.type == Event.Type.KEY_RELEASED) && socket != null) {
+            if (keyBinding != null) {
+                Action action = keyBinding.checkAction(event.asKeyEvent().key);
+                if (action != null && keyBinding.isRealtimeAction(action)) {
+                    // Send realtime change over network
+                    // todo
+                }
+            }
+        }
+    }
+
+    public boolean isLocal() {
+        // No key binding means this player is remote
+        return keyBinding != null;
+    }
+
+    public void disableAllRealtimeActions() {
+        for (Map.Entry<Action, Boolean> action : actionProxies.entrySet()) {
+            // todo
         }
     }
 
     public void handleRealtimeInput(CommandQueue commands) {
-        // Traverse all assigned keys and check if they are pressed
-        for (Map.Entry<Keyboard.Key, Action> pair : keyBinding.entrySet()) {
-            // If key is pressed, lookup action and trigger corresponding command
-            if (Keyboard.isKeyPressed(pair.getKey()) && isRealtimeAction(pair.getValue())) {
-                commands.push(actionBinding.get(pair.getValue()));
+        // Check if this is a networked game and local player or just a single player game
+        if ((socket != null && isLocal()) || socket == null) {
+            // Lookup all actions and push corresponding commands to queue
+            LinkedList<Action> activeActions = keyBinding.getRealtimeActions();
+            for (Action action : activeActions) {
+                commands.push(actionBinding.get(action));
             }
         }
     }
 
-    public void assignKey(Action action, Keyboard.Key key) {
-        // Remove all keys that already map to action
-        keyBinding.values().remove(action);
-
-        // Insert new binding
-        keyBinding.put(key, action);
-    }
-
-    public Keyboard.Key getAssignedKey(Action action) {
-        for (Map.Entry<Keyboard.Key, Action> pair : keyBinding.entrySet()) {
-            if (action.equals(pair.getValue())) {
-                return pair.getKey();
+    public void handleRealtimeNetworkInput(CommandQueue commands) {
+        if (socket != null && !isLocal()) {
+            // Traverse all realtime input proxies. Because this is a networked game, the input isn't handled directly
+            for (Map.Entry<Action, Boolean> pair : actionProxies.entrySet()) {
+                if (pair.getValue() && keyBinding.isRealtimeAction(pair.getKey())) {
+                    commands.push(actionBinding.get(pair.getKey()));
+                }
             }
         }
+    }
 
-        return Keyboard.Key.UNKNOWN;
+    public void handleNetworkEvent(Action action, CommandQueue commands) {
+        commands.push(actionBinding.get(action));
+    }
+
+    public void handleNetworkRealtimeChange(Action action, boolean actionEnabled) {
+        actionProxies.put(action, actionEnabled);
     }
 
     public void setMissionStatus(MissionStatus status) {
@@ -113,74 +147,85 @@ public class Player {
     private void initializeActions() {
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(-1, 0);
+            command.commandAction = new AircraftMover(-1, 0, identifier);
             actionBinding.put(Action.MOVE_LEFT, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(+1, 0);
+            command.commandAction = new AircraftMover(+1, 0, identifier);
             actionBinding.put(Action.MOVE_RIGHT, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(0, -1);
+            command.commandAction = new AircraftMover(0, -1, identifier);
             actionBinding.put(Action.MOVE_UP, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new AircraftMover(0, +1);
+            command.commandAction = new AircraftMover(0, +1, identifier);
             actionBinding.put(Action.MOVE_DOWN, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new CommandAction<Aircraft>() {
-                @Override
-                public void invoke(Aircraft aircraft, Time dt) {
-                    aircraft.fire();
-                }
-            };
+            command.commandAction = new AircraftFireTrigger(identifier);
             actionBinding.put(Action.FIRE, command);
         }
 
         {
             Command command = new Command();
-            command.commandAction = new CommandAction<Aircraft>() {
-                @Override
-                public void invoke(Aircraft aircraft, Time dt) {
-                    aircraft.launchingMissile();
-                }
-            };
+            command.commandAction = new AircraftMissileTrigger(identifier);
             actionBinding.put(Action.LAUNCH_MISSILE, command);
-        }
-    }
-
-    private boolean isRealtimeAction(Action action) {
-        switch (action) {
-            case MOVE_LEFT:
-            case MOVE_RIGHT:
-            case MOVE_DOWN:
-            case MOVE_UP:
-            case FIRE:
-                return true;
-            default:
-                return false;
         }
     }
 }
 
 class AircraftMover implements CommandAction<Aircraft> {
     private Vector2f velocity;
+    private Integer aircraftId;
 
-    AircraftMover(float vx, float vy) {
+    AircraftMover(float vx, float vy, Integer identifier) {
         velocity = new Vector2f(vx, vy);
+        aircraftId = identifier;
     }
 
     @Override
     public void invoke(Aircraft aircraft, Time dt) {
-        aircraft.accelerate(Vector2f.mul(velocity, aircraft.getMaxSpeed()));
+        if (aircraft.getIdentifier().equals(aircraftId)) {
+            aircraft.accelerate(Vector2f.mul(velocity, aircraft.getMaxSpeed()));
+        }
+    }
+}
+
+class AircraftFireTrigger implements CommandAction<Aircraft> {
+    private Integer aircraftId;
+
+    AircraftFireTrigger(Integer identifier) {
+        aircraftId = identifier;
+    }
+
+    @Override
+    public void invoke(Aircraft aircraft, Time dt) {
+        if (aircraft.getIdentifier().equals(aircraftId)) {
+            aircraft.fire();
+        }
+    }
+}
+
+class AircraftMissileTrigger implements CommandAction<Aircraft> {
+    private Integer aircraftId;
+
+    AircraftMissileTrigger(Integer identifier) {
+        aircraftId = identifier;
+    }
+
+    @Override
+    public void invoke(Aircraft aircraft, Time dt) {
+        if (aircraft.getIdentifier().equals(aircraftId)) {
+            aircraft.launchingMissile();
+        }
     }
 }

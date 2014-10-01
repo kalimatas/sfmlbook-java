@@ -15,7 +15,6 @@ public class Application {
     private RenderWindow window;
     private ResourceHolder textures = new ResourceHolder();
     private ResourceHolder fonts = new ResourceHolder();
-    private Player player = new Player();
 
     private MusicPlayer music = new MusicPlayer();
     private SoundPlayer sounds = new SoundPlayer();
@@ -27,7 +26,7 @@ public class Application {
 
     public Application() {
         window = new RenderWindow(new VideoMode(1024, 768), "Network", WindowStyle.CLOSE);
-        stateStack = new StateStack(new State.Context(window, textures, fonts, player, music, sounds));
+        stateStack = new StateStack(new State.Context(window, textures, fonts, music, sounds, new KeyBinding(1), new KeyBinding(2)));
 
         window.setKeyRepeatEnabled(false);
         window.setVerticalSyncEnabled(true);

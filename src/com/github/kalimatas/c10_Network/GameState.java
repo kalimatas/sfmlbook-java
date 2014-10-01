@@ -13,7 +13,8 @@ public class GameState extends State {
         super(stack, context);
 
         world = new World(context.window, context.fonts, context.sounds);
-        player = context.player;
+
+        player = new Player(null, 1, context.keys1);
         player.setMissionStatus(Player.MissionStatus.MISSION_RUNNING);
 
         // Play game theme
