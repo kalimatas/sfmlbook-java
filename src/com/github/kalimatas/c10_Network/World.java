@@ -1,5 +1,6 @@
 package com.github.kalimatas.c10_Network;
 
+import com.github.kalimatas.c10_Network.Network.GameActions;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
@@ -35,8 +36,8 @@ public class World {
 
     private BloomEffect bloomEffect = new BloomEffect();
 
-    // todo: NetworkNode
     private boolean networkedWorld;
+    private NetworkNode networkNode;
 
     private class SpawnPoint {
         Aircraft.Type type;
@@ -156,6 +157,10 @@ public class World {
         return player;
     }
 
+    public GameActions.Action pollGameAction() {
+        return networkNode.pollGameAction();
+    }
+
     public boolean hasAlivePlayer() {
         return playerAircrafts.size() > 0;
     }
@@ -241,7 +246,8 @@ public class World {
 
         // Add network node, if necessary
         if (networkedWorld) {
-            // todo
+            networkNode = new NetworkNode();
+            sceneGraph.attachChild(networkNode);
         }
 
         // Add enemy aircraft

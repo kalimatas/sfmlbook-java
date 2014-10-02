@@ -3,6 +3,7 @@ package com.github.kalimatas.c10_Network;
 import com.github.kalimatas.c10_Network.DataTables.AircraftData;
 import com.github.kalimatas.c10_Network.DataTables.DataTables;
 import com.github.kalimatas.c10_Network.DataTables.Direction;
+import com.github.kalimatas.c10_Network.Network.GameActions;
 import org.jsfml.graphics.*;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
@@ -137,7 +138,16 @@ public class Aircraft extends Entity {
 
                 // Emit network game action for enemy explosions
                 if (!isAllied()) {
-                    // todo
+                    Command command = new Command();
+                    command.category = Category.NETWORK;
+                    command.commandAction = new CommandAction<NetworkNode>() {
+                        @Override
+                        public void invoke(NetworkNode node, Time dt) {
+                            node.notifyGameAction(GameActions.Type.ENEMY_EXPLODE, getWorldPosition());
+                        }
+                    };
+
+                    commands.push(command);
                 }
 
                 explosionBegan = true;

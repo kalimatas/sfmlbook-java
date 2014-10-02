@@ -7,7 +7,7 @@ public class GameActions {
         ENEMY_EXPLODE,
     }
 
-    public class Action {
+    public static class Action {
         public Type type;
         public Vector2f position;
 
