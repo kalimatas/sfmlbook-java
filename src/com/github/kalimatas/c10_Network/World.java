@@ -157,6 +157,13 @@ public class World {
         return player;
     }
 
+    public void createPickup(Vector2f position, Pickup.Type type) {
+        Pickup pickup = new Pickup(type, textures);
+        pickup.setPosition(position);
+        pickup.setVelocity(0.f, 1.f);
+        sceneLayers[Layer.UPPER_AIR.ordinal()].attachChild(pickup);
+    }
+
     public GameActions.Action pollGameAction() {
         return networkNode.pollGameAction();
     }
