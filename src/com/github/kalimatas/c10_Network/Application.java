@@ -9,6 +9,8 @@ import org.jsfml.window.VideoMode;
 import org.jsfml.window.WindowStyle;
 import org.jsfml.window.event.Event;
 
+import java.io.IOException;
+
 public class Application {
     private static final Time timePerFrame = Time.getSeconds(1.0f / 60.0f);
 
@@ -46,7 +48,7 @@ public class Application {
         music.setVolume(25.f);
     }
 
-    public void run() throws TextureCreationException {
+    public void run() throws TextureCreationException, IOException {
         Clock clock = new Clock();
         Time timeSinceLastUpdate = Time.ZERO;
 
@@ -70,7 +72,7 @@ public class Application {
         }
     }
 
-    private void processInput() throws TextureCreationException {
+    private void processInput() throws TextureCreationException, IOException {
         for (Event event : window.pollEvents()) {
             stateStack.handleEvent(event);
 
@@ -80,7 +82,7 @@ public class Application {
         }
     }
 
-    private void update(Time dt) throws TextureCreationException {
+    private void update(Time dt) throws TextureCreationException, IOException {
         stateStack.update(dt);
     }
 

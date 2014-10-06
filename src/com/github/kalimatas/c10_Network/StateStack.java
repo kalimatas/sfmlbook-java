@@ -4,6 +4,7 @@ import org.jsfml.graphics.TextureCreationException;
 import org.jsfml.system.Time;
 import org.jsfml.window.event.Event;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -29,7 +30,7 @@ public class StateStack {
         // Instead we just create a new State with "createState" method.
     }
 
-    public void update(Time dt) throws TextureCreationException {
+    public void update(Time dt) throws TextureCreationException, IOException {
         ListIterator<State> it = stack.listIterator(stack.size());
         while (it.hasPrevious()) {
             if (!it.previous().update(dt)) {
@@ -46,7 +47,7 @@ public class StateStack {
         }
     }
 
-    public void handleEvent(final Event event) throws TextureCreationException {
+    public void handleEvent(final Event event) throws TextureCreationException, IOException {
         ListIterator<State> it = stack.listIterator(stack.size());
         while (it.hasPrevious()) {
             if (!it.previous().handleEvent(event)) {
@@ -73,7 +74,7 @@ public class StateStack {
         return stack.isEmpty();
     }
 
-    private State createState(States stateId) throws TextureCreationException {
+    private State createState(States stateId) throws TextureCreationException, IOException {
         switch (stateId) {
             case TITLE:
                 return new TitleState(this, context);
@@ -98,7 +99,7 @@ public class StateStack {
         }
     }
 
-    private void applyPendingChanges() throws TextureCreationException {
+    private void applyPendingChanges() throws TextureCreationException, IOException {
         for (PendingChange change : pendingList) {
             switch (change.action) {
                 case PUSH:
