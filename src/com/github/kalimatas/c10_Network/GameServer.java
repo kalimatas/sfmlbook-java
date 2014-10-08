@@ -225,7 +225,15 @@ public class GameServer {
     }
 
     private void broadcastMessage(final String message) {
-        // todo
+        for (int i = 0; i < connectedPlayers; ++i) {
+            if (peers.get(i).ready) {
+                Packet packet = new Packet();
+                packet.append(Server.PacketType.BROADCAST_MESSAGE);
+                packet.append(message);
+
+                sendPacket(peers.get(i).socket, packet);
+            }
+        }
     }
 
     private void sendToAll(Packet packet) {
