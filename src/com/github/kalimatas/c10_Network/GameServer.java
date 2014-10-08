@@ -153,7 +153,35 @@ public class GameServer {
     private void executionThread() throws IOException {
         setListening(true);
 
+        Time stepInterval = Time.getSeconds(1.f / 60.f);
+        Time stepTime = Time.ZERO;
+        Time tickInterval = Time.getSeconds(1.f / 20.f);
+        Time tickTime = Time.ZERO;
+        Clock stepClock = new Clock();
+        Clock tickClock = new Clock();
+
         while (!waitingThreadEnd) {
+            handleIncomingPackets();
+            handleIncomingConnections();
+
+            stepTime = Time.add(stepTime, stepClock.getElapsedTime());
+            stepClock.restart();
+
+            tickTime = Time.add(tickTime, tickClock.getElapsedTime());
+            tickClock.restart();
+
+            // Fixed update step
+            while (stepTime.compareTo(stepInterval) >= 0) {
+                battleFieldRect = new FloatRect(battleFieldRect.left, battleFieldRect.top + battleFieldScrollSpeed * stepInterval.asSeconds(), battleFieldRect.width, battleFieldRect.height);
+                stepTime = Time.sub(stepTime, stepInterval);
+            }
+
+            // Fixed tick step
+            while (tickTime.compareTo(tickInterval) >= 0) {
+                tick();
+                tickTime = Time.sub(tickTime, tickInterval);
+            }
+
             // Sleep to prevent server from consuming 100% CPU
             try {
                 Thread.sleep(300);
@@ -164,6 +192,43 @@ public class GameServer {
     }
 
     private void tick() {
+        // todo
+    }
+
+    private Time now() {
+        return clock.getElapsedTime();
+    }
+
+    private void handleIncomingPackets() {
+        // todo
+    }
+
+    private void handleIncomingPacket(Packet packet, RemotePeer receivingPeer, boolean detectedTimeout) {
+        // todo
+    }
+
+    private void updateClientState() {
+        // todo
+    }
+
+    private void handleIncomingConnections() {
+        // todo
+    }
+
+    private void handleDisconnections() {
+        // todo
+    }
+
+    // Tell the newly connected peer about how the world is currently
+    private void informWorldState(Socket socket) {
+        // todo
+    }
+
+    private void broadcastMessage(final String message) {
+        // todo
+    }
+
+    private void sendToAll(Packet packet) {
         // todo
     }
 }
