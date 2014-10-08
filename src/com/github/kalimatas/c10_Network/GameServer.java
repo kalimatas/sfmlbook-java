@@ -1,5 +1,6 @@
 package com.github.kalimatas.c10_Network;
 
+import com.github.kalimatas.c10_Network.Network.Packet;
 import com.github.kalimatas.c10_Network.Network.Server;
 import org.jsfml.graphics.FloatRect;
 import org.jsfml.system.Clock;
@@ -7,11 +8,11 @@ import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -35,7 +36,7 @@ public class GameServer {
         private Map<Integer, Boolean> realtimeActions = new HashMap<>();
     }
 
-    private Clock clock;
+    private Clock clock = new Clock();
     private ServerSocketChannel channel;
     private ServerSocket listenerSocket;
     private boolean listeningState = false;
@@ -74,8 +75,59 @@ public class GameServer {
         }).start();
     }
 
+    public void notifyPlayerRealtimeChange(Integer aircraftIdentifier, Player.Action action, boolean actionEnabled) {
+        for (int i = 0; i < connectedPlayers; ++i) {
+            if (peers.get(i).ready) {
+                Packet packet = new Packet();
+                packet.append(Server.PacketType.PLAYER_REALTIME_CHANGE);
+                packet.append(aircraftIdentifier);
+                packet.append(action);
+                packet.append(actionEnabled);
+
+                sendPacket(peers.get(i).socket, packet);
+            }
+        }
+    }
+
+    public void notifyPlayerEvent(Integer aircraftIdentifier, Player.Action action) {
+        for (int i = 0; i < connectedPlayers; ++i) {
+            if (peers.get(i).ready) {
+                Packet packet = new Packet();
+                packet.append(Server.PacketType.PLAYER_EVENT);
+                packet.append(aircraftIdentifier);
+                packet.append(action);
+
+                sendPacket(peers.get(i).socket, packet);
+            }
+        }
+    }
+
+    public void notifyPlayerSpawn(Integer aircraftIdentifier) {
+        for (int i = 0; i < connectedPlayers; ++i) {
+            if (peers.get(i).ready) {
+                Packet packet = new Packet();
+                packet.append(Server.PacketType.PLAYER_CONNECT);
+                packet.append(aircraftIdentifier);
+                packet.append(aircraftInfo.get(aircraftIdentifier).position.x);
+                packet.append(aircraftInfo.get(aircraftIdentifier).position.y);
+
+                sendPacket(peers.get(i).socket, packet);
+            }
+        }
+    }
+
     public void setWaitingThreadEnd(boolean flag) {
         waitingThreadEnd = flag;
+    }
+
+    private void sendPacket(Socket socket, Packet packet) {
+        System.out.println("sending packet...");
+
+        try {
+            new ObjectOutputStream(socket.getOutputStream()).writeObject(packet);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void openChannel() throws IOException {
