@@ -237,6 +237,10 @@ public class GameServer {
     }
 
     private void sendToAll(Packet packet) {
-        // todo
+        for (RemotePeer peer : peers) {
+            if (peer.ready) {
+                sendPacket(peer.socket, packet);
+            }
+        }
     }
 }
