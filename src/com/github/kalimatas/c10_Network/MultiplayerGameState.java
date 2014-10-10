@@ -1,6 +1,8 @@
 package com.github.kalimatas.c10_Network;
 
+import com.github.kalimatas.c10_Network.Network.NothingToReadException;
 import com.github.kalimatas.c10_Network.Network.Packet;
+import com.github.kalimatas.c10_Network.Network.PacketReaderWriter;
 import com.github.kalimatas.c10_Network.Network.Server;
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RenderWindow;
@@ -11,20 +13,16 @@ import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.event.Event;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 public class MultiplayerGameState extends State {
     private class Helper {
@@ -50,9 +48,10 @@ public class MultiplayerGameState extends State {
     private RenderWindow window;
     private ResourceHolder textureHolder;
 
-    private Map<Integer, Player> players = new HashMap<>(); // todo: int?
+    private Map<Integer, Player> players = new HashMap<>();
     private LinkedList<Integer> localPlayerIdentifiers = new LinkedList<>();
-    private Socket socket;
+    private SocketChannel socketChannel;
+    private Selector readSelector;
     private boolean connected = false;
     private GameServer gameServer;
     private Clock tickClock = new Clock();
@@ -114,13 +113,15 @@ public class MultiplayerGameState extends State {
             ip = new Helper().getAddressFromFile();
         }
 
-        SocketChannel channel = SocketChannel.open();
-        socket = channel.socket();
-
         try {
-            socket.connect(new InetSocketAddress(ip, Server.SERVER_PORT), 5);
-            channel.configureBlocking(false);
+            socketChannel = SocketChannel.open(new InetSocketAddress(InetAddress.getLoopbackAddress(), Server.SERVER_PORT));
+            socketChannel.configureBlocking(false);
+
+            readSelector = Selector.open();
+            socketChannel.register(readSelector, SelectionKey.OP_READ);
+            //socketChannel.socket().setSoTimeout(5000);
             connected = true;
+            System.out.println("connected to server");
         } catch (IOException e) {
             failedConnectionClock.restart();
         }
@@ -163,7 +164,70 @@ public class MultiplayerGameState extends State {
         if (connected) {
             world.update(dt);
 
+            // Remove players whose aircrafts were destroyed
+            // todo
+
+            // Only handle the realtime input if the window has focus and the game is unpaused
+            // todo
+
+            // Always handle the network input
+            // todo
+
+            // Handle messages from server that may have arrived
+            try {
+                readSelector.selectNow();
+
+                Set<SelectionKey> readKeys = readSelector.selectedKeys();
+                Iterator<SelectionKey> it = readKeys.iterator();
+
+                while (it.hasNext()) {
+                    SelectionKey key = it.next();
+                    it.remove();
+
+                    SocketChannel channel = (SocketChannel) key.channel();
+
+                    Packet packet = null;
+                    try {
+                        packet = PacketReaderWriter.receive(channel);
+                    } catch (NothingToReadException e) {
+                        connected = false;
+                        channel.close();
+                        break;
+                    }
+
+                    if (packet != null) {
+                        timeSinceLastPacket = Time.ZERO;
+                        Server.PacketType packetType = (Server.PacketType) packet.get();
+                        handlePacket(packetType, packet);
+                    } else {
+                        // Check for timeout with the server
+                        if (timeSinceLastPacket.compareTo(clientTimeout) > 0) {
+                            connected = false;
+
+                            failedConnectionText.setString("Lost connection to server");
+                            Utility.centerOrigin(failedConnectionText);
+
+                            failedConnectionClock.restart();
+                        }
+                    }
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             updateBroadcastMessage(dt);
+
+            // Time counter for blinking 2nd player text
+            // todo
+
+            // Events occurring in the game
+            // todo
+
+            // Regular position updates
+            // todo
+
+            timeSinceLastPacket = Time.add(timeSinceLastPacket, dt);
         }
 
         // Failed to connect and waited for more than 5 seconds: Back to menu
@@ -190,13 +254,39 @@ public class MultiplayerGameState extends State {
     }
 
     private void updateBroadcastMessage(Time elapsedTime) {
-        // todo
+        if (broadcasts.isEmpty()) {
+            return;
+        }
+
+        // Update broadcast timer
+        broadcastElapsedTime = Time.add(broadcastElapsedTime, elapsedTime);
+        if (broadcastElapsedTime.compareTo(Time.getSeconds(2.5f)) > 0) {
+            // If message has expired, remove it
+            broadcasts.removeFirst();
+
+            // Continue to display next broadcast message
+            if (!broadcasts.isEmpty()) {
+                broadcastText.setString(broadcasts.peekFirst());
+                Utility.centerOrigin(broadcastText);
+                broadcastElapsedTime = Time.ZERO;
+            }
+        }
     }
 
-    /**
-     * todo: packetType Integer?
-     */
-    private void handlePacket(Integer packetType, Packet packet) {
+    private void handlePacket(Server.PacketType packetType, Packet packet) {
+        switch (packetType) {
+            // Send message to all clients
+            case BROADCAST_MESSAGE:
+                String message = (String) packet.get();
+                broadcasts.addLast(message);
 
+                // Just added first message, display immediately
+                if (broadcasts.size() == 1) {
+                    broadcastText.setString(broadcasts.peekFirst());
+                    Utility.centerOrigin(broadcastText);
+                    broadcastElapsedTime = Time.ZERO;
+                }
+                break;
+        }
     }
 }

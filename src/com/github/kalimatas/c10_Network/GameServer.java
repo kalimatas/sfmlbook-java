@@ -1,6 +1,7 @@
 package com.github.kalimatas.c10_Network;
 
 import com.github.kalimatas.c10_Network.Network.Packet;
+import com.github.kalimatas.c10_Network.Network.PacketReaderWriter;
 import com.github.kalimatas.c10_Network.Network.Server;
 import org.jsfml.graphics.FloatRect;
 import org.jsfml.system.Clock;
@@ -8,11 +9,12 @@ import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 
 import java.io.IOException;
-import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -21,7 +23,7 @@ import java.util.Map;
 public class GameServer {
     // A GameServerRemotePeer refers to one instance of the game, may it be local or from another computer
     private class RemotePeer {
-        private Socket socket;
+        private SocketChannel socketChannel;
         private Time lastPacketTime;
         private LinkedList<Integer> aircraftIdentifiers = new LinkedList<>();
         private boolean ready;
@@ -37,8 +39,8 @@ public class GameServer {
     }
 
     private Clock clock = new Clock();
-    private ServerSocketChannel channel;
-    private ServerSocket listenerSocket;
+    private ServerSocketChannel serverSocketChannel;
+    private Selector readSelector;
     private boolean listeningState = false;
     private Time clientTimeoutTime = Time.getSeconds(3.f);
 
@@ -62,7 +64,11 @@ public class GameServer {
     public GameServer(Vector2f battlefieldSize) throws IOException {
         battleFieldRect = new FloatRect(0.f, worldHeight - battlefieldSize.y, battlefieldSize.x, battlefieldSize.y);
 
-        openChannel();
+        serverSocketChannel = ServerSocketChannel.open();
+        serverSocketChannel.configureBlocking(false);
+        serverSocketChannel.bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), Server.SERVER_PORT));
+
+        readSelector = Selector.open();
 
         (new Thread() {
             public void run() {
@@ -75,7 +81,7 @@ public class GameServer {
         }).start();
     }
 
-    public void notifyPlayerRealtimeChange(Integer aircraftIdentifier, Player.Action action, boolean actionEnabled) {
+    public void notifyPlayerRealtimeChange(Integer aircraftIdentifier, Player.Action action, boolean actionEnabled) throws IOException {
         for (int i = 0; i < connectedPlayers; ++i) {
             if (peers.get(i).ready) {
                 Packet packet = new Packet();
@@ -84,12 +90,12 @@ public class GameServer {
                 packet.append(action);
                 packet.append(actionEnabled);
 
-                sendPacket(peers.get(i).socket, packet);
+                PacketReaderWriter.send(peers.get(i).socketChannel, packet);
             }
         }
     }
 
-    public void notifyPlayerEvent(Integer aircraftIdentifier, Player.Action action) {
+    public void notifyPlayerEvent(Integer aircraftIdentifier, Player.Action action) throws IOException {
         for (int i = 0; i < connectedPlayers; ++i) {
             if (peers.get(i).ready) {
                 Packet packet = new Packet();
@@ -97,12 +103,12 @@ public class GameServer {
                 packet.append(aircraftIdentifier);
                 packet.append(action);
 
-                sendPacket(peers.get(i).socket, packet);
+                PacketReaderWriter.send(peers.get(i).socketChannel, packet);
             }
         }
     }
 
-    public void notifyPlayerSpawn(Integer aircraftIdentifier) {
+    public void notifyPlayerSpawn(Integer aircraftIdentifier) throws IOException {
         for (int i = 0; i < connectedPlayers; ++i) {
             if (peers.get(i).ready) {
                 Packet packet = new Packet();
@@ -111,7 +117,7 @@ public class GameServer {
                 packet.append(aircraftInfo.get(aircraftIdentifier).position.x);
                 packet.append(aircraftInfo.get(aircraftIdentifier).position.y);
 
-                sendPacket(peers.get(i).socket, packet);
+                PacketReaderWriter.send(peers.get(i).socketChannel, packet);
             }
         }
     }
@@ -120,37 +126,11 @@ public class GameServer {
         waitingThreadEnd = flag;
     }
 
-    private void sendPacket(Socket socket, Packet packet) {
-        System.out.println("sending packet...");
-
-        try {
-            new ObjectOutputStream(socket.getOutputStream()).writeObject(packet);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private void setListening(boolean enable) {
+        listeningState = enable;
     }
 
-    private void openChannel() throws IOException {
-        channel = ServerSocketChannel.open();
-        channel.configureBlocking(false);
-        listenerSocket = channel.socket();
-    }
-
-    private void setListening(boolean enable) throws IOException {
-        // Check if it isn't already listening
-        if (enable) {
-            if (!listeningState) {
-                openChannel();
-                channel.bind(new InetSocketAddress(Server.SERVER_PORT));
-                listeningState = true;
-            }
-        } else {
-            listenerSocket.close();
-            listeningState = false;
-        }
-    }
-
-    private void executionThread() throws IOException {
+    private void executionThread() throws IOException, InterruptedException {
         setListening(true);
 
         Time stepInterval = Time.getSeconds(1.f / 60.f);
@@ -161,8 +141,8 @@ public class GameServer {
         Clock tickClock = new Clock();
 
         while (!waitingThreadEnd) {
-            handleIncomingPackets();
             handleIncomingConnections();
+            handleIncomingPackets();
 
             stepTime = Time.add(stepTime, stepClock.getElapsedTime());
             stepClock.restart();
@@ -183,11 +163,7 @@ public class GameServer {
             }
 
             // Sleep to prevent server from consuming 100% CPU
-            try {
-                Thread.sleep(300);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            Thread.sleep(100);
         }
     }
 
@@ -211,8 +187,52 @@ public class GameServer {
         // todo
     }
 
-    private void handleIncomingConnections() {
-        // todo
+    private void handleIncomingConnections() throws IOException {
+        if (!listeningState) {
+            return;
+        }
+
+        SocketChannel clientChannel;
+        while ((clientChannel = serverSocketChannel.accept()) != null) {
+            clientChannel.configureBlocking(false);
+            clientChannel.register(readSelector, SelectionKey.OP_READ);
+
+            RemotePeer peer = peers.get(connectedPlayers);
+            peer.socketChannel = clientChannel;
+
+            // order the new client to spawn its own plane ( player 1 )
+            AircraftInfo ai = new AircraftInfo();
+            ai.position = new Vector2f(battleFieldRect.width / 2, battleFieldRect.top + battleFieldRect.height / 2);
+            ai.hitpoints = 100;
+            ai.missileAmmo = 2;
+            aircraftInfo.put(aircraftIdentifierCounter, ai);
+
+            Packet packet = new Packet();
+            packet.append(Server.PacketType.SPAWN_SELF);
+            packet.append(aircraftIdentifierCounter);
+            packet.append(ai.position.x);
+            packet.append(ai.position.y);
+
+            peer.aircraftIdentifiers.addLast(aircraftIdentifierCounter);
+
+            broadcastMessage("New player!");
+            informWorldState(peer.socketChannel);
+            notifyPlayerSpawn(aircraftIdentifierCounter++);
+            aircraftIdentifierCounter++;
+
+            PacketReaderWriter.send(peer.socketChannel, packet);
+            peer.ready = true;
+            peer.lastPacketTime = now(); // prevent initial timeouts
+            connectedPlayers++;
+            aircraftCount++;
+
+            if (connectedPlayers >= maxConnectedPlayers) {
+                setListening(false);
+            } else {
+                // Add a new waiting peer
+                peers.addLast(new RemotePeer());
+            }
+        }
     }
 
     private void handleDisconnections() {
@@ -220,26 +240,26 @@ public class GameServer {
     }
 
     // Tell the newly connected peer about how the world is currently
-    private void informWorldState(Socket socket) {
+    private void informWorldState(SocketChannel channel) {
         // todo
     }
 
-    private void broadcastMessage(final String message) {
+    private void broadcastMessage(final String message) throws IOException {
         for (int i = 0; i < connectedPlayers; ++i) {
             if (peers.get(i).ready) {
                 Packet packet = new Packet();
                 packet.append(Server.PacketType.BROADCAST_MESSAGE);
                 packet.append(message);
 
-                sendPacket(peers.get(i).socket, packet);
+                PacketReaderWriter.send(peers.get(i).socketChannel, packet);
             }
         }
     }
 
-    private void sendToAll(Packet packet) {
+    private void sendToAll(Packet packet) throws IOException {
         for (RemotePeer peer : peers) {
             if (peer.ready) {
-                sendPacket(peer.socket, packet);
+                PacketReaderWriter.send(peer.socketChannel, packet);
             }
         }
     }
