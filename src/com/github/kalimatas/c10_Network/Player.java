@@ -4,7 +4,7 @@ import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.event.Event;
 
-import java.net.Socket;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
@@ -15,7 +15,7 @@ public class Player {
     private Map<Action, Boolean> actionProxies = new HashMap<>();
     private MissionStatus currentMissionStatus = MissionStatus.MISSION_RUNNING;
     private Integer identifier;
-    private Socket socket;
+    private SocketChannel socketChannel;
 
     public enum Action {
         MOVE_LEFT(0),
@@ -48,10 +48,10 @@ public class Player {
         MISSION_FAILURE,
     }
 
-    public Player(Socket socket, Integer identifier, final KeyBinding binding) {
+    public Player(SocketChannel socketChannel, Integer identifier, final KeyBinding binding) {
         this.keyBinding = binding;
         this.identifier = identifier;
-        this.socket = socket;
+        this.socketChannel = socketChannel;
 
         // Set initial action bindings
         initializeActions();
@@ -71,7 +71,7 @@ public class Player {
                 Action action = keyBinding.checkAction(event.asKeyEvent().key);
                 if (action != null && !keyBinding.isRealtimeAction(action)) {
                     // Network connected -> send event over network
-                    if (socket != null) {
+                    if (socketChannel != null) {
                         // todo
                     }
 
@@ -84,7 +84,7 @@ public class Player {
         }
 
         // Realtime change (network connected)
-        if ((event.type == Event.Type.KEY_PRESSED || event.type == Event.Type.KEY_RELEASED) && socket != null) {
+        if ((event.type == Event.Type.KEY_PRESSED || event.type == Event.Type.KEY_RELEASED) && socketChannel != null) {
             if (keyBinding != null) {
                 Action action = keyBinding.checkAction(event.asKeyEvent().key);
                 if (action != null && keyBinding.isRealtimeAction(action)) {
@@ -108,7 +108,7 @@ public class Player {
 
     public void handleRealtimeInput(CommandQueue commands) {
         // Check if this is a networked game and local player or just a single player game
-        if ((socket != null && isLocal()) || socket == null) {
+        if ((socketChannel != null && isLocal()) || socketChannel == null) {
             // Lookup all actions and push corresponding commands to queue
             LinkedList<Action> activeActions = keyBinding.getRealtimeActions();
             for (Action action : activeActions) {
@@ -118,7 +118,7 @@ public class Player {
     }
 
     public void handleRealtimeNetworkInput(CommandQueue commands) {
-        if (socket != null && !isLocal()) {
+        if (socketChannel != null && !isLocal()) {
             // Traverse all realtime input proxies. Because this is a networked game, the input isn't handled directly
             for (Map.Entry<Action, Boolean> pair : actionProxies.entrySet()) {
                 if (pair.getValue() && keyBinding.isRealtimeAction(pair.getKey())) {

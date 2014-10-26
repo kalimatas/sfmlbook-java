@@ -1,8 +1,6 @@
 package com.github.kalimatas.c10_Network;
 
-import com.github.kalimatas.c10_Network.Network.Packet;
-import com.github.kalimatas.c10_Network.Network.PacketReaderWriter;
-import com.github.kalimatas.c10_Network.Network.Server;
+import com.github.kalimatas.c10_Network.Network.*;
 import org.jsfml.graphics.FloatRect;
 import org.jsfml.system.Clock;
 import org.jsfml.system.Time;
@@ -15,10 +13,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 public class GameServer {
     // A GameServerRemotePeer refers to one instance of the game, may it be local or from another computer
@@ -175,12 +170,84 @@ public class GameServer {
         return clock.getElapsedTime();
     }
 
-    private void handleIncomingPackets() {
-        // todo
+    private RemotePeer getClientByChannel(SocketChannel channel) {
+        for (RemotePeer peer : peers) {
+            if (peer.socketChannel.equals(channel)) {
+                return peer;
+            }
+        }
+        return null;
+    }
+
+    private void handleIncomingPackets() throws IOException {
+        boolean detectedTimeout = false;
+
+        readSelector.selectNow();
+
+        Set<SelectionKey> readKeys = readSelector.selectedKeys();
+        Iterator<SelectionKey> it = readKeys.iterator();
+
+        while (it.hasNext()) {
+            SelectionKey key = it.next();
+            it.remove();
+
+            SocketChannel channel = (SocketChannel) key.channel();
+            // We don't know what peer's channel this is, so let's find out
+            RemotePeer peer = getClientByChannel(channel);
+
+            if (!peer.ready) {
+                continue;
+            }
+
+            Packet packet = null;
+            try {
+                packet = PacketReaderWriter.receive(channel);
+            } catch (NothingToReadException e) {
+                e.printStackTrace();
+            }
+
+            if (packet != null) {
+                // Interpret packet and react to it
+                handleIncomingPacket(packet, peer, detectedTimeout);
+
+                // Packet was indeed received, update the ping timer
+                peer.lastPacketTime = now();
+            }
+
+            if (now().compareTo(Time.add(peer.lastPacketTime, clientTimeoutTime)) >= 0) {
+                peer.timedOut = true;
+                detectedTimeout = true;
+            }
+        }
+
+        if (detectedTimeout) {
+            handleDisconnections();
+        }
     }
 
     private void handleIncomingPacket(Packet packet, RemotePeer receivingPeer, boolean detectedTimeout) {
-        // todo
+        Client.PacketType packetType = (Client.PacketType) packet.get();
+        System.out.println("server: handleIncomingPacket " + packetType);
+
+        switch (packetType) {
+            case QUIT:
+                break;
+
+            case PLAYER_EVENT:
+                break;
+
+            case PLAYER_REALTIME_CHANGE:
+                break;
+
+            case REQUEST_COOP_PARTNER:
+                break;
+
+            case POSITION_UPDATE:
+                break;
+
+            case GAME_EVENT:
+                break;
+        }
     }
 
     private void updateClientState() {

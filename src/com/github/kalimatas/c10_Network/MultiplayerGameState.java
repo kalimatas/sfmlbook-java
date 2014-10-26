@@ -114,14 +114,12 @@ public class MultiplayerGameState extends State {
         }
 
         try {
-            socketChannel = SocketChannel.open(new InetSocketAddress(InetAddress.getLoopbackAddress(), Server.SERVER_PORT));
+            socketChannel = SocketChannel.open(new InetSocketAddress(ip, Server.SERVER_PORT));
             socketChannel.configureBlocking(false);
 
             readSelector = Selector.open();
             socketChannel.register(readSelector, SelectionKey.OP_READ);
-            //socketChannel.socket().setSoTimeout(5000);
             connected = true;
-            System.out.println("connected to server");
         } catch (IOException e) {
             failedConnectionClock.restart();
         }
@@ -287,6 +285,60 @@ public class MultiplayerGameState extends State {
                     broadcastElapsedTime = Time.ZERO;
                 }
                 break;
+
+            // Sent by the server to order to spawn player 1 airplane on connect
+            case SPAWN_SELF:
+                Integer aircraftIdentifier = (Integer) packet.get();
+                Vector2f aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
+
+                Aircraft aircraft = world.addAircraft(aircraftIdentifier);
+                aircraft.setPosition(aircraftPosition);
+
+                players.put(aircraftIdentifier, new Player(socketChannel, aircraftIdentifier, getContext().keys1));
+                localPlayerIdentifiers.addLast(aircraftIdentifier);
+
+                gameStarted = true;
+                break;
+
+            //
+            case PLAYER_CONNECT:
+                break;
+
+            //
+            case PLAYER_DISCONNECT:
+                break;
+
+            //
+            case INITIAL_STATE:
+                break;
+
+            //
+            case ACCEPT_COOP_PARTNER:
+                break;
+
+            // Player event (like missile fired) occurs
+            case PLAYER_EVENT:
+                break;
+
+            // Player's movement or fire keyboard state changes
+            case PLAYER_REALTIME_CHANGE:
+                break;
+
+            // New enemy to be created
+            case SPAWN_ENEMY:
+                break;
+
+            // Mission successfully completed
+            case MISSION_SUCCESS:
+                break;
+
+            // Pickup created
+            case SPAWN_PICKUP:
+                break;
+
+            case UPDATE_CLIENT_STATE:
+                break;
+
         }
     }
 }
