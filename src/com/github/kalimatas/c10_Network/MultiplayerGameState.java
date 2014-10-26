@@ -288,24 +288,35 @@ public class MultiplayerGameState extends State {
 
             // Sent by the server to order to spawn player 1 airplane on connect
             case SPAWN_SELF:
-                Integer aircraftIdentifier = (Integer) packet.get();
-                Vector2f aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
+                Integer aircraftSelfIdentifier = (Integer) packet.get();
+                Vector2f aircraftSelfPosition = new Vector2f((float) packet.get(), (float) packet.get());
 
-                Aircraft aircraft = world.addAircraft(aircraftIdentifier);
-                aircraft.setPosition(aircraftPosition);
+                Aircraft aircraftSelf = world.addAircraft(aircraftSelfIdentifier);
+                aircraftSelf.setPosition(aircraftSelfPosition);
 
-                players.put(aircraftIdentifier, new Player(socketChannel, aircraftIdentifier, getContext().keys1));
-                localPlayerIdentifiers.addLast(aircraftIdentifier);
+                players.put(aircraftSelfIdentifier, new Player(socketChannel, aircraftSelfIdentifier, getContext().keys1));
+                localPlayerIdentifiers.addLast(aircraftSelfIdentifier);
 
                 gameStarted = true;
                 break;
 
             //
             case PLAYER_CONNECT:
+                Integer aircraftConnectIdentifier = (Integer) packet.get();
+                Vector2f aircraftConnectPosition = new Vector2f((float) packet.get(), (float) packet.get());
+
+                Aircraft aircraftConnect = world.addAircraft(aircraftConnectIdentifier);
+                aircraftConnect.setPosition(aircraftConnectPosition);
+
+                players.put(aircraftConnectIdentifier, new Player(socketChannel, aircraftConnectIdentifier, null));
                 break;
 
             //
             case PLAYER_DISCONNECT:
+                Integer aircraftDisconnectIdentifier = (Integer) packet.get();
+
+                world.removeAircraft(aircraftDisconnectIdentifier);
+                players.remove(aircraftDisconnectIdentifier);
                 break;
 
             //

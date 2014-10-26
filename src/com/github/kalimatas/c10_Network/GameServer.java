@@ -302,8 +302,34 @@ public class GameServer {
         }
     }
 
-    private void handleDisconnections() {
-        // todo
+    private void handleDisconnections() throws IOException {
+        for (Iterator<RemotePeer> itr = peers.iterator(); itr.hasNext(); ) {
+            RemotePeer peer = itr.next();
+            if (peer.timedOut) {
+                // Inform everyone of the disconnection, erase
+                for (Integer identifier : peer.aircraftIdentifiers) {
+                    Packet packet = new Packet();
+                    packet.append(Server.PacketType.PLAYER_DISCONNECT);
+                    packet.append(identifier);
+                    sendToAll(packet);
+
+                    aircraftInfo.remove(identifier);
+                }
+
+                connectedPlayers--;
+                aircraftCount -= peer.aircraftIdentifiers.size();
+
+                itr.remove();
+
+                // Go back to a listening state if needed
+                if (connectedPlayers < maxConnectedPlayers) {
+                    peers.addLast(new RemotePeer());
+                    setListening(true);
+                }
+
+                broadcastMessage("An ally has disconnected.");
+            }
+        }
     }
 
     // Tell the newly connected peer about how the world is currently
