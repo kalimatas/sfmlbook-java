@@ -35,6 +35,10 @@ abstract public class Entity extends SceneNode {
         return hitpoints;
     }
 
+    public void setHitpoints(int points) {
+        hitpoints = points;
+    }
+
     public void repair(int points) {
         if (!(points > 0)) {
             throw new IllegalArgumentException();

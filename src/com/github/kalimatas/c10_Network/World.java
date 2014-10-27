@@ -169,6 +169,15 @@ public class World {
         return networkNode.pollGameAction();
     }
 
+    public void setCurrentBattleFieldPosition(float lineY) {
+        worldView.setCenter(worldView.getCenter().x, lineY - worldView.getSize().y/2);
+        spawnPosition = new Vector2f(spawnPosition.x, worldBounds.height);
+    }
+
+    public void setWorldHeight(float height) {
+        worldBounds = new FloatRect(worldBounds.left, worldBounds.top, worldBounds.width, height);
+    }
+
     public boolean hasAlivePlayer() {
         return playerAircrafts.size() > 0;
     }

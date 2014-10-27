@@ -321,6 +321,27 @@ public class MultiplayerGameState extends State {
 
             //
             case INITIAL_STATE:
+                float worldHeight = (float) packet.get();
+                float currentScroll = (float) packet.get();
+
+                world.setWorldHeight(worldHeight);
+                world.setCurrentBattleFieldPosition(currentScroll);
+
+                int aircraftCount = (int) packet.get();
+                for (int i = 0; i < aircraftCount; i++) {
+                    Integer aircraftInitialIdentifier = (Integer) packet.get();
+                    Vector2f aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
+                    Integer hitpoints = (Integer) packet.get();
+                    Integer missileAmmo = (Integer) packet.get();
+
+                    Aircraft aircraft = world.addAircraft(aircraftInitialIdentifier);
+                    aircraft.setPosition(aircraftPosition);
+                    aircraft.setHitpoints(hitpoints);
+                    aircraft.setMissileAmmo(missileAmmo);
+
+                    players.put(aircraftInitialIdentifier, new Player(socketChannel, aircraftInitialIdentifier, null));
+                }
+
                 break;
 
             //

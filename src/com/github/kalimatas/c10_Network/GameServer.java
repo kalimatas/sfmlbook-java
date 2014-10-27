@@ -333,8 +333,26 @@ public class GameServer {
     }
 
     // Tell the newly connected peer about how the world is currently
-    private void informWorldState(SocketChannel channel) {
-        // todo
+    private void informWorldState(SocketChannel channel) throws IOException {
+        Packet packet = new Packet();
+        packet.append(Server.PacketType.INITIAL_STATE);
+        packet.append(worldHeight);
+        packet.append(battleFieldRect.top + battleFieldRect.height);
+        packet.append(aircraftCount);
+
+        for (int i = 0; i < connectedPlayers; ++i) {
+            if (peers.get(i).ready) {
+                for (Integer identifier : peers.get(i).aircraftIdentifiers) {
+                    packet.append(identifier);
+                    packet.append(aircraftInfo.get(identifier).position.x);
+                    packet.append(aircraftInfo.get(identifier).position.y);
+                    packet.append(aircraftInfo.get(identifier).hitpoints);
+                    packet.append(aircraftInfo.get(identifier).missileAmmo);
+                }
+            }
+        }
+
+        PacketReaderWriter.send(channel, packet);
     }
 
     private void broadcastMessage(final String message) throws IOException {
