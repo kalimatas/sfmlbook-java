@@ -30,7 +30,7 @@ public class GameServer {
         private Vector2f position;
         private Integer hitpoints;
         private Integer missileAmmo;
-        private Map<Integer, Boolean> realtimeActions = new HashMap<>();
+        private Map<Player.Action, Boolean> realtimeActions = new HashMap<>();
     }
 
     private Clock clock = new Clock();
@@ -208,7 +208,7 @@ public class GameServer {
 
             if (packet != null) {
                 // Interpret packet and react to it
-                handleIncomingPacket(packet, peer, detectedTimeout);
+                detectedTimeout = handleIncomingPacket(packet, peer);
 
                 // Packet was indeed received, update the ping timer
                 peer.lastPacketTime = now();
@@ -225,18 +225,30 @@ public class GameServer {
         }
     }
 
-    private void handleIncomingPacket(Packet packet, RemotePeer receivingPeer, boolean detectedTimeout) {
+    private boolean handleIncomingPacket(Packet packet, RemotePeer receivingPeer) throws IOException {
         Client.PacketType packetType = (Client.PacketType) packet.get();
-        System.out.println("server: handleIncomingPacket " + packetType);
+
+        boolean detectedTimeout = false;
 
         switch (packetType) {
             case QUIT:
+                receivingPeer.timedOut = true;
+                detectedTimeout = true;
                 break;
 
             case PLAYER_EVENT:
+                Integer aircraftIdentifier = (Integer) packet.get();
+                Player.Action action = (Player.Action) packet.get();
+
+                notifyPlayerEvent(aircraftIdentifier, action);
                 break;
 
             case PLAYER_REALTIME_CHANGE:
+                Integer aircraftRealtimeIdentifier = (Integer) packet.get();
+                Player.Action realtimeAction = (Player.Action) packet.get();
+                boolean actionEnabled = (boolean) packet.get();
+                aircraftInfo.get(aircraftRealtimeIdentifier).realtimeActions.put(realtimeAction, actionEnabled);
+                notifyPlayerRealtimeChange(aircraftRealtimeIdentifier, realtimeAction, actionEnabled);
                 break;
 
             case REQUEST_COOP_PARTNER:
@@ -248,6 +260,8 @@ public class GameServer {
             case GAME_EVENT:
                 break;
         }
+
+        return detectedTimeout;
     }
 
     private void updateClientState() {

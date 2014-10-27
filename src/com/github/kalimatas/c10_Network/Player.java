@@ -1,9 +1,13 @@
 package com.github.kalimatas.c10_Network;
 
+import com.github.kalimatas.c10_Network.Network.Client;
+import com.github.kalimatas.c10_Network.Network.Packet;
+import com.github.kalimatas.c10_Network.Network.PacketReaderWriter;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 import org.jsfml.window.event.Event;
 
+import java.io.IOException;
 import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -72,7 +76,15 @@ public class Player {
                 if (action != null && !keyBinding.isRealtimeAction(action)) {
                     // Network connected -> send event over network
                     if (socketChannel != null) {
-                        // todo
+                        Packet packet = new Packet();
+                        packet.append(Client.PacketType.PLAYER_EVENT);
+                        packet.append(identifier);
+                        packet.append(action);
+                        try {
+                            PacketReaderWriter.send(socketChannel, packet);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
 
                     // Network disconnected -> local event
@@ -89,7 +101,16 @@ public class Player {
                 Action action = keyBinding.checkAction(event.asKeyEvent().key);
                 if (action != null && keyBinding.isRealtimeAction(action)) {
                     // Send realtime change over network
-                    // todo
+                    Packet packet = new Packet();
+                    packet.append(Client.PacketType.PLAYER_REALTIME_CHANGE);
+                    packet.append(identifier);
+                    packet.append(action);
+                    packet.append(event.type == Event.Type.KEY_PRESSED);
+                    try {
+                        PacketReaderWriter.send(socketChannel, packet);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -102,7 +123,16 @@ public class Player {
 
     public void disableAllRealtimeActions() {
         for (Map.Entry<Action, Boolean> action : actionProxies.entrySet()) {
-            // todo
+            Packet packet = new Packet();
+            packet.append(Client.PacketType.PLAYER_REALTIME_CHANGE);
+            packet.append(identifier);
+            packet.append(action.getKey());
+            packet.append(false);
+            try {
+                PacketReaderWriter.send(socketChannel, packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
