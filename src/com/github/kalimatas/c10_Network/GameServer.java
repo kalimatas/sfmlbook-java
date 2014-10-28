@@ -269,6 +269,22 @@ public class GameServer {
                 break;
 
             case GAME_EVENT:
+                GameActions.Type actionType = (GameActions.Type) packet.get();
+                float x = (float) packet.get();
+                float y = (float) packet.get();
+
+                // Enemy explodes: With certain probability, drop pickup
+                // To avoid multiple messages spawning multiple pickups, only listen to first peer (host)
+                if (actionType == GameActions.Type.ENEMY_EXPLODE && new Random().nextInt(3) == 0 && receivingPeer.equals(peers.get(0))) {
+                    Packet actionPacket = new Packet();
+                    actionPacket.append(Server.PacketType.SPAWN_PICKUP);
+                    actionPacket.append(Pickup.Type.getRandom());
+                    actionPacket.append(x);
+                    actionPacket.append(y);
+
+                    sendToAll(actionPacket);
+                }
+
                 break;
         }
 

@@ -192,10 +192,18 @@ public class MultiplayerGameState extends State {
             }
 
             // Only handle the realtime input if the window has focus and the game is unpaused
-            // todo
+            if (activeState && hasFocus) {
+                CommandQueue commands = world.getCommandQueue();
+                for (Map.Entry<Integer, Player> pair : players.entrySet()) {
+                    pair.getValue().handleRealtimeInput(commands);
+                }
+            }
 
             // Always handle the network input
-            // todo
+            CommandQueue commands = world.getCommandQueue();
+            for (Map.Entry<Integer, Player> pair : players.entrySet()) {
+                pair.getValue().handleRealtimeNetworkInput(commands);
+            }
 
             // Handle messages from server that may have arrived
             try {
@@ -243,10 +251,26 @@ public class MultiplayerGameState extends State {
             updateBroadcastMessage(dt);
 
             // Time counter for blinking 2nd player text
-            // todo
+            playerInvitationTime = Time.add(playerInvitationTime, dt);
+            if (playerInvitationTime.compareTo(Time.getSeconds(1.f)) > 0) {
+                playerInvitationTime = Time.ZERO;
+            }
 
             // Events occurring in the game
-            // todo
+            GameActions.Action gameAction;
+            while ((gameAction = world.pollGameAction()) != null) {
+                Packet packet = new Packet();
+                packet.append(Client.PacketType.GAME_EVENT);
+                packet.append(gameAction.type);
+                packet.append(gameAction.position.x);
+                packet.append(gameAction.position.y);
+
+                try {
+                    PacketReaderWriter.send(socketChannel, packet);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
 
             // Regular position updates
             // todo
@@ -397,6 +421,10 @@ public class MultiplayerGameState extends State {
 
             // Pickup created
             case SPAWN_PICKUP:
+                Pickup.Type pickupType = (Pickup.Type) packet.get();
+                Vector2f pickupPosition = new Vector2f((float) packet.get(), (float) packet.get());
+
+                world.createPickup(pickupPosition, pickupType);
                 break;
 
             case UPDATE_CLIENT_STATE:
