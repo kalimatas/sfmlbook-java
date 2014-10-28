@@ -169,7 +169,27 @@ public class MultiplayerGameState extends State {
             world.update(dt);
 
             // Remove players whose aircrafts were destroyed
-            // todo
+            boolean foundLocalPlane = false;
+            for (Iterator<Map.Entry<Integer, Player>> itr = players.entrySet().iterator(); itr.hasNext(); ) {
+                Map.Entry<Integer, Player> entry = itr.next();
+                // Check if there are no more local planes for remote clients
+                if (localPlayerIdentifiers.contains(entry.getKey())) {
+                    foundLocalPlane = true;
+                }
+
+                if (world.getAircraft(entry.getKey()) == null) {
+                    itr.remove();
+
+                    // No more players left: Mission failed
+                    if (players.isEmpty()) {
+                        requestStackPush(States.GAME_OVER);
+                    }
+                }
+            }
+
+            if (!foundLocalPlane && gameStarted) {
+                requestStackPush(States.GAME_OVER);
+            }
 
             // Only handle the realtime input if the window has focus and the game is unpaused
             // todo
