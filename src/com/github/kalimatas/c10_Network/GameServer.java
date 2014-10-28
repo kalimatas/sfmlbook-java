@@ -162,7 +162,16 @@ public class GameServer {
         }
     }
 
-    private void tick() {
+    private void tick() throws IOException {
+        updateClientState();
+
+        // Check for mission success = all planes with position.y < offset
+        // todo
+
+        // Remove IDs of aircraft that have been destroyed (relevant if a client has two, and loses one)
+        // todo
+
+        // Check if its time to attempt to spawn enemies
         // todo
     }
 
@@ -228,6 +237,8 @@ public class GameServer {
     private boolean handleIncomingPacket(Packet packet, RemotePeer receivingPeer) throws IOException {
         Client.PacketType packetType = (Client.PacketType) packet.get();
 
+        Integer aircraftIdentifier;
+        Player.Action action;
         boolean detectedTimeout = false;
 
         switch (packetType) {
@@ -237,18 +248,18 @@ public class GameServer {
                 break;
 
             case PLAYER_EVENT:
-                Integer aircraftIdentifier = (Integer) packet.get();
-                Player.Action action = (Player.Action) packet.get();
+                aircraftIdentifier = (Integer) packet.get();
+                action = (Player.Action) packet.get();
 
                 notifyPlayerEvent(aircraftIdentifier, action);
                 break;
 
             case PLAYER_REALTIME_CHANGE:
-                Integer aircraftRealtimeIdentifier = (Integer) packet.get();
-                Player.Action realtimeAction = (Player.Action) packet.get();
+                aircraftIdentifier = (Integer) packet.get();
+                action = (Player.Action) packet.get();
                 boolean actionEnabled = (boolean) packet.get();
-                aircraftInfo.get(aircraftRealtimeIdentifier).realtimeActions.put(realtimeAction, actionEnabled);
-                notifyPlayerRealtimeChange(aircraftRealtimeIdentifier, realtimeAction, actionEnabled);
+                aircraftInfo.get(aircraftIdentifier).realtimeActions.put(action, actionEnabled);
+                notifyPlayerRealtimeChange(aircraftIdentifier, action, actionEnabled);
                 break;
 
             case REQUEST_COOP_PARTNER:
@@ -264,8 +275,19 @@ public class GameServer {
         return detectedTimeout;
     }
 
-    private void updateClientState() {
-        // todo
+    private void updateClientState() throws IOException {
+        Packet updateClientStatePacket = new Packet();
+        updateClientStatePacket.append(Server.PacketType.UPDATE_CLIENT_STATE);
+        updateClientStatePacket.append(battleFieldRect.top + battleFieldRect.height);
+        updateClientStatePacket.append(aircraftInfo.size());
+
+        for (Map.Entry<Integer, AircraftInfo> aircraft : aircraftInfo.entrySet()) {
+            updateClientStatePacket.append(aircraft.getKey());
+            updateClientStatePacket.append(aircraft.getValue().position.x);
+            updateClientStatePacket.append(aircraft.getValue().position.y);
+        }
+
+        sendToAll(updateClientStatePacket);
     }
 
     private void handleIncomingConnections() throws IOException {

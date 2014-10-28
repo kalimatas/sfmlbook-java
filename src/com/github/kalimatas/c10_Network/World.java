@@ -484,7 +484,7 @@ public class World {
         activeEnemies.clear();
     }
 
-    private FloatRect getViewBounds() {
+    public FloatRect getViewBounds() {
         return new FloatRect(
                 Vector2f.sub(worldView.getCenter(), Vector2f.div(worldView.getSize(), 2.f)),
                 worldView.getSize()

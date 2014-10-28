@@ -1,9 +1,6 @@
 package com.github.kalimatas.c10_Network;
 
-import com.github.kalimatas.c10_Network.Network.NothingToReadException;
-import com.github.kalimatas.c10_Network.Network.Packet;
-import com.github.kalimatas.c10_Network.Network.PacketReaderWriter;
-import com.github.kalimatas.c10_Network.Network.Server;
+import com.github.kalimatas.c10_Network.Network.*;
 import org.jsfml.graphics.Color;
 import org.jsfml.graphics.RenderWindow;
 import org.jsfml.graphics.Text;
@@ -153,7 +150,16 @@ public class MultiplayerGameState extends State {
     }
 
     public void onDestroy() {
-        // todo
+        if (host && connected) {
+            // Inform server this client is dying
+            Packet packet = new Packet();
+            packet.append(Client.PacketType.QUIT);
+            try {
+                PacketReaderWriter.send(socketChannel, packet);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Override
@@ -272,6 +278,11 @@ public class MultiplayerGameState extends State {
     }
 
     private void handlePacket(Server.PacketType packetType, Packet packet) {
+        Integer aircraftIdentifier;
+        Vector2f aircraftPosition;
+        Aircraft aircraft;
+        int aircraftCount;
+
         switch (packetType) {
             // Send message to all clients
             case BROADCAST_MESSAGE:
@@ -288,35 +299,35 @@ public class MultiplayerGameState extends State {
 
             // Sent by the server to order to spawn player 1 airplane on connect
             case SPAWN_SELF:
-                Integer aircraftSelfIdentifier = (Integer) packet.get();
-                Vector2f aircraftSelfPosition = new Vector2f((float) packet.get(), (float) packet.get());
+                aircraftIdentifier = (Integer) packet.get();
+                aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
 
-                Aircraft aircraftSelf = world.addAircraft(aircraftSelfIdentifier);
-                aircraftSelf.setPosition(aircraftSelfPosition);
+                aircraft = world.addAircraft(aircraftIdentifier);
+                aircraft.setPosition(aircraftPosition);
 
-                players.put(aircraftSelfIdentifier, new Player(socketChannel, aircraftSelfIdentifier, getContext().keys1));
-                localPlayerIdentifiers.addLast(aircraftSelfIdentifier);
+                players.put(aircraftIdentifier, new Player(socketChannel, aircraftIdentifier, getContext().keys1));
+                localPlayerIdentifiers.addLast(aircraftIdentifier);
 
                 gameStarted = true;
                 break;
 
             //
             case PLAYER_CONNECT:
-                Integer aircraftConnectIdentifier = (Integer) packet.get();
-                Vector2f aircraftConnectPosition = new Vector2f((float) packet.get(), (float) packet.get());
+                aircraftIdentifier = (Integer) packet.get();
+                aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
 
-                Aircraft aircraftConnect = world.addAircraft(aircraftConnectIdentifier);
-                aircraftConnect.setPosition(aircraftConnectPosition);
+                aircraft = world.addAircraft(aircraftIdentifier);
+                aircraft.setPosition(aircraftPosition);
 
-                players.put(aircraftConnectIdentifier, new Player(socketChannel, aircraftConnectIdentifier, null));
+                players.put(aircraftIdentifier, new Player(socketChannel, aircraftIdentifier, null));
                 break;
 
             //
             case PLAYER_DISCONNECT:
-                Integer aircraftDisconnectIdentifier = (Integer) packet.get();
+                aircraftIdentifier = (Integer) packet.get();
 
-                world.removeAircraft(aircraftDisconnectIdentifier);
-                players.remove(aircraftDisconnectIdentifier);
+                world.removeAircraft(aircraftIdentifier);
+                players.remove(aircraftIdentifier);
                 break;
 
             //
@@ -327,19 +338,19 @@ public class MultiplayerGameState extends State {
                 world.setWorldHeight(worldHeight);
                 world.setCurrentBattleFieldPosition(currentScroll);
 
-                int aircraftCount = (int) packet.get();
+                aircraftCount = (int) packet.get();
                 for (int i = 0; i < aircraftCount; i++) {
-                    Integer aircraftInitialIdentifier = (Integer) packet.get();
-                    Vector2f aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
+                    aircraftIdentifier = (Integer) packet.get();
+                    aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
                     Integer hitpoints = (Integer) packet.get();
                     Integer missileAmmo = (Integer) packet.get();
 
-                    Aircraft aircraft = world.addAircraft(aircraftInitialIdentifier);
+                    aircraft = world.addAircraft(aircraftIdentifier);
                     aircraft.setPosition(aircraftPosition);
                     aircraft.setHitpoints(hitpoints);
                     aircraft.setMissileAmmo(missileAmmo);
 
-                    players.put(aircraftInitialIdentifier, new Player(socketChannel, aircraftInitialIdentifier, null));
+                    players.put(aircraftIdentifier, new Player(socketChannel, aircraftIdentifier, null));
                 }
 
                 break;
@@ -369,8 +380,29 @@ public class MultiplayerGameState extends State {
                 break;
 
             case UPDATE_CLIENT_STATE:
-                break;
+                float currentWorldPosition = (float) packet.get();
+                aircraftCount = (int) packet.get();
 
+                float currentViewPosition = world.getViewBounds().top + world.getViewBounds().height;
+
+                // Set the world's scroll compensation according to whether the view is behind or too advanced
+                world.setWorldScrollCompensation(currentViewPosition / currentWorldPosition);
+
+                for (int i = 0; i < aircraftCount; i++) {
+                    aircraftIdentifier = (Integer) packet.get();
+                    aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
+
+                    aircraft = world.getAircraft(aircraftIdentifier);
+                    boolean isLocalPlane = localPlayerIdentifiers.contains(aircraftIdentifier);
+                    if (aircraft != null && !isLocalPlane) {
+                        Vector2f interpolatedPosition = Vector2f.add(
+                            aircraft.getPosition(),
+                            Vector2f.mul(Vector2f.sub(aircraftPosition, aircraft.getPosition()), 0.1f)
+                        );
+                        aircraft.setPosition(interpolatedPosition);
+                    }
+                }
+                break;
         }
     }
 }
