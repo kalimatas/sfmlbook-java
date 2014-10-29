@@ -8,6 +8,7 @@ import org.jsfml.graphics.TextureCreationException;
 import org.jsfml.system.Clock;
 import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
+import org.jsfml.window.Keyboard;
 import org.jsfml.window.event.Event;
 
 import java.io.*;
@@ -296,6 +297,39 @@ public class MultiplayerGameState extends State {
         // Stop game server on window close
         if (event.type == Event.Type.CLOSED && host) {
             gameServer.setWaitingThreadEnd(true);
+            return true;
+        }
+
+        // Game input handling
+        CommandQueue commands = world.getCommandQueue();
+
+        // Forward event to all players
+        for (Map.Entry<Integer, Player> pair : players.entrySet()) {
+            pair.getValue().handleEvent(event, commands);
+        }
+
+        if (event.type == Event.Type.KEY_PRESSED) {
+            // Enter pressed, add second player co-op (only if we are one player)
+            if (event.asKeyEvent().key == Keyboard.Key.RETURN && localPlayerIdentifiers.size() == 1) {
+                Packet packet = new Packet();
+                packet.append(Client.PacketType.REQUEST_COOP_PARTNER);
+
+                try {
+                    PacketReaderWriter.send(socketChannel, packet);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            // Escape pressed, trigger the pause screen
+            else if (event.asKeyEvent().key == Keyboard.Key.ESCAPE) {
+                disableAllRealtimeActions();
+                requestStackPush(States.NETWORK_PAUSE);
+            }
+        } else if (event.type == Event.Type.GAINED_FOCUS) {
+            hasFocus = true;
+        } else if (event.type == Event.Type.LOST_FOCUS) {
+            hasFocus = false;
         }
 
         return true;
@@ -401,6 +435,11 @@ public class MultiplayerGameState extends State {
 
             //
             case ACCEPT_COOP_PARTNER:
+                aircraftIdentifier = (Integer) packet.get();
+
+                world.addAircraft(aircraftIdentifier);
+                players.put(aircraftIdentifier, new Player(socketChannel, aircraftIdentifier, getContext().keys2));
+                localPlayerIdentifiers.addLast(aircraftIdentifier);
                 break;
 
             // Player event (like missile fired) occurs

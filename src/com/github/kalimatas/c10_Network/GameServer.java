@@ -239,6 +239,7 @@ public class GameServer {
 
         Integer aircraftIdentifier;
         Player.Action action;
+        AircraftInfo ai;
         boolean detectedTimeout = false;
 
         switch (packetType) {
@@ -263,6 +264,35 @@ public class GameServer {
                 break;
 
             case REQUEST_COOP_PARTNER:
+                receivingPeer.aircraftIdentifiers.addLast(aircraftIdentifierCounter);
+
+                ai = new AircraftInfo();
+                ai.position = new Vector2f(battleFieldRect.width / 2, battleFieldRect.top + battleFieldRect.height / 2);
+                ai.hitpoints = 100;
+                ai.missileAmmo = 2;
+                aircraftInfo.put(aircraftIdentifierCounter, ai);
+
+                Packet requestPacket = new Packet();
+                requestPacket.append(Server.PacketType.ACCEPT_COOP_PARTNER);
+                requestPacket.append(aircraftIdentifierCounter);
+                requestPacket.append(aircraftInfo.get(aircraftIdentifierCounter).position.x);
+                requestPacket.append(aircraftInfo.get(aircraftIdentifierCounter).position.y);
+
+                PacketReaderWriter.send(receivingPeer.socketChannel, requestPacket);
+                aircraftCount++;
+
+                // Inform every other peer about this new plane
+                for (RemotePeer peer : peers) {
+                    if (!peer.equals(receivingPeer) && peer.ready) {
+                        Packet notifyPacket = new Packet();
+                        notifyPacket.append(Server.PacketType.PLAYER_CONNECT);
+                        notifyPacket.append(aircraftIdentifierCounter);
+                        notifyPacket.append(aircraftInfo.get(aircraftIdentifierCounter).position.x);
+                        notifyPacket.append(aircraftInfo.get(aircraftIdentifierCounter).position.y);
+                        PacketReaderWriter.send(peer.socketChannel, notifyPacket);
+                    }
+                }
+                aircraftIdentifierCounter++;
                 break;
 
             case POSITION_UPDATE:
