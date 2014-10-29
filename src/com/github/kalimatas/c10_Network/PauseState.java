@@ -11,9 +11,12 @@ import org.jsfml.window.event.Event;
 public class PauseState extends State {
     private Text pausedText = new Text();
     private Container GUIContainer = new Container();
+    private boolean letUpdatesThrough = false;
 
-    public PauseState(StateStack stack, Context context) {
+    public PauseState(StateStack stack, Context context, boolean letUpdatesThrough) {
         super(stack, context);
+
+        this.letUpdatesThrough = letUpdatesThrough;
 
         Font font = context.fonts.getFont(Fonts.MAIN);
         Vector2f viewSize = context.window.getView().getSize();
@@ -71,7 +74,7 @@ public class PauseState extends State {
 
     @Override
     public boolean update(Time dt) {
-        return false;
+        return letUpdatesThrough;
     }
 
     @Override

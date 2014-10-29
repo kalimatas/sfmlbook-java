@@ -87,7 +87,9 @@ public class StateStack {
             case JOIN_GAME:
                 return new MultiplayerGameState(this, context, false);
             case PAUSE:
-                return new PauseState(this, context);
+                return new PauseState(this, context, false);
+            case NETWORK_PAUSE:
+                return new PauseState(this, context, true);
             case SETTINGS:
                 return new SettingsState(this, context);
             case GAME_OVER:
