@@ -238,6 +238,9 @@ public class GameServer {
         Client.PacketType packetType = (Client.PacketType) packet.get();
 
         Integer aircraftIdentifier;
+        int aircraftHitpoints;
+        int missileAmmo;
+        Vector2f aircraftPosition;
         Player.Action action;
         AircraftInfo ai;
         boolean detectedTimeout = false;
@@ -296,6 +299,16 @@ public class GameServer {
                 break;
 
             case POSITION_UPDATE:
+                int numAircrafts = (int) packet.get();
+                for (int i = 0; i < numAircrafts; i++) {
+                    aircraftIdentifier = (Integer) packet.get();
+                    aircraftPosition = new Vector2f((float) packet.get(), (float) packet.get());
+                    aircraftHitpoints = (int) packet.get();
+                    missileAmmo = (int) packet.get();
+                    aircraftInfo.get(aircraftIdentifier).position = aircraftPosition;
+                    aircraftInfo.get(aircraftIdentifier).hitpoints = aircraftHitpoints;
+                    aircraftInfo.get(aircraftIdentifier).missileAmmo = missileAmmo;
+                }
                 break;
 
             case GAME_EVENT:

@@ -274,7 +274,30 @@ public class MultiplayerGameState extends State {
             }
 
             // Regular position updates
-            // todo
+            if (tickClock.getElapsedTime().compareTo(Time.getSeconds(1.f / 20.f)) > 0) {
+                Packet positionUpdatePacket = new Packet();
+                positionUpdatePacket.append(Client.PacketType.POSITION_UPDATE);
+                positionUpdatePacket.append(localPlayerIdentifiers.size());
+
+                Aircraft aircraft;
+                for (Integer identifier : localPlayerIdentifiers) {
+                    if ((aircraft = world.getAircraft(identifier)) != null) {
+                        positionUpdatePacket.append(identifier);
+                        positionUpdatePacket.append(aircraft.getPosition().x);
+                        positionUpdatePacket.append(aircraft.getPosition().y);
+                        positionUpdatePacket.append(aircraft.getHitpoints());
+                        positionUpdatePacket.append(aircraft.getMissileAmmo());
+                    }
+                }
+
+                try {
+                    PacketReaderWriter.send(socketChannel, positionUpdatePacket);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                tickClock.restart();
+            }
 
             timeSinceLastPacket = Time.add(timeSinceLastPacket, dt);
         }
@@ -289,7 +312,11 @@ public class MultiplayerGameState extends State {
     }
 
     public void disableAllRealtimeActions() {
-        // todo
+        activeState = false;
+
+        for (Integer identifier : localPlayerIdentifiers) {
+            players.get(identifier).disableAllRealtimeActions();
+        }
     }
 
     @Override
