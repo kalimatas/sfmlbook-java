@@ -166,13 +166,64 @@ public class GameServer {
         updateClientState();
 
         // Check for mission success = all planes with position.y < offset
-        // todo
+        boolean allAircraftsDone = true;
+        for (Map.Entry<Integer, AircraftInfo> pair : aircraftInfo.entrySet()) {
+            // As long as one player has not crossed the finish line yet, set variable to false
+            if (pair.getValue().position.y > 0.f) {
+                allAircraftsDone = false;
+            }
+        }
+
+        if (allAircraftsDone) {
+            Packet missionSuccessPacket = new Packet();
+            missionSuccessPacket.append(Server.PacketType.MISSION_SUCCESS);
+            sendToAll(missionSuccessPacket);
+        }
 
         // Remove IDs of aircraft that have been destroyed (relevant if a client has two, and loses one)
-        // todo
+        for (Iterator<Map.Entry<Integer, AircraftInfo>> itr = aircraftInfo.entrySet().iterator(); itr.hasNext(); ) {
+            Map.Entry<Integer, AircraftInfo> entry = itr.next();
+            if (entry.getValue().hitpoints < 0) {
+                itr.remove();
+            }
+        }
 
         // Check if its time to attempt to spawn enemies
-        // todo
+        if (now().compareTo(Time.add(timeForNextSpawn, lastSpawnTime)) >= 0) {
+            // No more enemies are spawned near the end
+            if (battleFieldRect.top > 600.f) {
+                Random random = new Random();
+
+                int enemyCount = 1 + random.nextInt(2);
+                float spawnCenter = random.nextInt(500) - 250;
+
+                // In case only one enemy is being spawned, it appears directly at the spawnCenter
+                float planeDistance = 0.f;
+                float nextSpawnPosition = spawnCenter;
+
+                // In case there are two enemies being spawned together, each is spawned at each side of the spawnCenter, with a minimum distance
+                if (enemyCount == 2) {
+                    planeDistance = 150 + random.nextInt(250);
+                    nextSpawnPosition = spawnCenter - planeDistance / 2.f;
+                }
+
+                // Send the spawn orders to all clients
+                for (int i = 0; i < enemyCount; i++) {
+                    Packet packet = new Packet();
+                    packet.append(Server.PacketType.SPAWN_ENEMY);
+                    packet.append(Aircraft.Type.getRandomEnemy());
+                    packet.append(worldHeight - battleFieldRect.top + 500);
+                    packet.append(nextSpawnPosition);
+
+                    nextSpawnPosition += planeDistance / 2.f;
+
+                    sendToAll(packet);
+                }
+
+                lastSpawnTime = now();
+                timeForNextSpawn = Time.getMilliseconds(2000 + new Random().nextInt(6000));
+            }
+        }
     }
 
     private Time now() {

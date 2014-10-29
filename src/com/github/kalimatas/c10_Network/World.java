@@ -385,6 +385,10 @@ public class World {
         addEnemy(Aircraft.Type.RAPTOR, 200.f, 4200.f);
         addEnemy(Aircraft.Type.RAPTOR, 0.f, 4400.f);
 
+        sortEnemies();
+    }
+
+    public void sortEnemies() {
         // Sort all enemies according to their y value, such that lower enemies are checked first for spawning
         Collections.sort(enemySpawnPoints, new Comparator<SpawnPoint>() {
             @Override
@@ -399,7 +403,7 @@ public class World {
         });
     }
 
-    private void addEnemy(Aircraft.Type type, float relX, float relY) {
+    public void addEnemy(Aircraft.Type type, float relX, float relY) {
         SpawnPoint spawn = new SpawnPoint(type, spawnPosition.x + relX, spawnPosition.y - relY);
         enemySpawnPoints.addLast(spawn);
     }

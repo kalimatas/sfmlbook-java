@@ -15,10 +15,26 @@ import java.util.Random;
 
 public class Aircraft extends Entity {
     public enum Type {
-        EAGLE,
-        RAPTOR,
-        AVENGER,
-        TYPE_COUNT,
+        EAGLE(0),
+        RAPTOR(1),
+        AVENGER(2),
+        TYPE_COUNT(3);
+
+        private int typeIndex;
+
+        private Type(final int typeIndex) {
+            this.typeIndex = typeIndex;
+        }
+
+        public static Type getRandomEnemy() {
+            int randomTypeIndex = 1 + new Random().nextInt(TYPE_COUNT.ordinal() - 1);
+            for (Type type : values()) {
+                if (type.typeIndex == randomTypeIndex) {
+                    return type;
+                }
+            }
+            throw new IllegalArgumentException();
+        }
     }
 
     private Type type;

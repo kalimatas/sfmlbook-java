@@ -226,6 +226,8 @@ public class MultiplayerGameState extends State {
                         connected = false;
                         channel.close();
                         break;
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
 
                     if (packet != null) {
@@ -387,6 +389,7 @@ public class MultiplayerGameState extends State {
         Vector2f aircraftPosition;
         Aircraft aircraft;
         int aircraftCount;
+        Player.Action action;
 
         switch (packetType) {
             // Send message to all clients
@@ -471,18 +474,38 @@ public class MultiplayerGameState extends State {
 
             // Player event (like missile fired) occurs
             case PLAYER_EVENT:
+                aircraftIdentifier = (Integer) packet.get();
+                action = (Player.Action) packet.get();
+
+                if (players.containsKey(aircraftIdentifier)) {
+                    players.get(aircraftIdentifier).handleNetworkEvent(action, world.getCommandQueue());
+                }
                 break;
 
             // Player's movement or fire keyboard state changes
             case PLAYER_REALTIME_CHANGE:
+                aircraftIdentifier = (Integer) packet.get();
+                action = (Player.Action) packet.get();
+                boolean actionEnabled = (boolean) packet.get();
+
+                if (players.containsKey(aircraftIdentifier)) {
+                    players.get(aircraftIdentifier).handleNetworkRealtimeChange(action, actionEnabled);
+                }
                 break;
 
             // New enemy to be created
             case SPAWN_ENEMY:
+                Aircraft.Type type = (Aircraft.Type) packet.get();
+                float height = (float) packet.get();
+                float relativeX = (float) packet.get();
+
+                world.addEnemy(type, relativeX, height);
+                world.sortEnemies();
                 break;
 
             // Mission successfully completed
             case MISSION_SUCCESS:
+                requestStackPush(States.MISSION_SUCCESS);
                 break;
 
             // Pickup created
