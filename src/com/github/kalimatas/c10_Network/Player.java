@@ -71,46 +71,42 @@ public class Player {
     public void handleEvent(final Event event, CommandQueue commands) {
         // Event
         if (event.type == Event.Type.KEY_PRESSED) {
-            if (keyBinding != null) {
-                Action action = keyBinding.checkAction(event.asKeyEvent().key);
-                if (action != null && !keyBinding.isRealtimeAction(action)) {
-                    // Network connected -> send event over network
-                    if (socketChannel != null) {
-                        Packet packet = new Packet();
-                        packet.append(Client.PacketType.PLAYER_EVENT);
-                        packet.append(identifier);
-                        packet.append(action);
-                        try {
-                            PacketReaderWriter.send(socketChannel, packet);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+            Action action;
+            if (keyBinding != null && (action = keyBinding.checkAction(event.asKeyEvent().key)) != null && !keyBinding.isRealtimeAction(action)) {
+                // Network connected -> send event over network
+                if (socketChannel != null) {
+                    Packet packet = new Packet();
+                    packet.append(Client.PacketType.PLAYER_EVENT);
+                    packet.append(identifier);
+                    packet.append(action);
+                    try {
+                        PacketReaderWriter.send(socketChannel, packet);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
+                }
 
-                    // Network disconnected -> local event
-                    else {
-                        commands.push(actionBinding.get(action));
-                    }
+                // Network disconnected -> local event
+                else {
+                    commands.push(actionBinding.get(action));
                 }
             }
         }
 
         // Realtime change (network connected)
         if ((event.type == Event.Type.KEY_PRESSED || event.type == Event.Type.KEY_RELEASED) && socketChannel != null) {
-            if (keyBinding != null) {
-                Action action = keyBinding.checkAction(event.asKeyEvent().key);
-                if (action != null && keyBinding.isRealtimeAction(action)) {
-                    // Send realtime change over network
-                    Packet packet = new Packet();
-                    packet.append(Client.PacketType.PLAYER_REALTIME_CHANGE);
-                    packet.append(identifier);
-                    packet.append(action);
-                    packet.append(event.type == Event.Type.KEY_PRESSED);
-                    try {
-                        PacketReaderWriter.send(socketChannel, packet);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            Action action;
+            if (keyBinding != null && (action = keyBinding.checkAction(event.asKeyEvent().key)) != null && keyBinding.isRealtimeAction(action)) {
+                // Send realtime change over network
+                Packet packet = new Packet();
+                packet.append(Client.PacketType.PLAYER_REALTIME_CHANGE);
+                packet.append(identifier);
+                packet.append(action);
+                packet.append(event.type == Event.Type.KEY_PRESSED);
+                try {
+                    PacketReaderWriter.send(socketChannel, packet);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         }

@@ -51,7 +51,9 @@ public class KeyBinding {
     public Player.Action checkAction(Keyboard.Key key) {
         // There are no references in Java, so the method is modified,
         // but the idea is the same.
-        return keyMap.get(key);
+        return keyMap.containsKey(key)
+            ? keyMap.get(key)
+            : null;
     }
 
     public LinkedList<Player.Action> getRealtimeActions() {
