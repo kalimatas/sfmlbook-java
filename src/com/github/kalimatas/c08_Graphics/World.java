@@ -312,7 +312,7 @@ public class World {
             @Override
             public void invoke(Entity e, Time dt) {
                 if (getBattlefieldBounds().intersection(e.getBoundingRect()) == null) {
-                    e.destroy();
+                    e.remove();
                 }
             }
         };
