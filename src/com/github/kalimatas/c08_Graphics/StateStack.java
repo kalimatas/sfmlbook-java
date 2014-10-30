@@ -23,13 +23,8 @@ public class StateStack {
         this.context = context;
     }
 
-    public void registerState(States stateId) {
-        // There is no way to create an object of a T type
-        // in a generic method, so I don't know how to implement this logic.
-        // Instead we just create a new State with "createState" method.
-    }
-
     public void update(Time dt) throws TextureCreationException {
+        // Iterate from top to bottom, stop as soon as update() returns false
         ListIterator<State> it = stack.listIterator(stack.size());
         while (it.hasPrevious()) {
             if (!it.previous().update(dt)) {
@@ -41,12 +36,14 @@ public class StateStack {
     }
 
     public void draw() throws TextureCreationException {
+        // Draw all active states from bottom to top
         for (State state : stack) {
             state.draw();
         }
     }
 
     public void handleEvent(final Event event) throws TextureCreationException {
+        // Iterate from top to bottom, stop as soon as handleEvent() returns false
         ListIterator<State> it = stack.listIterator(stack.size());
         while (it.hasPrevious()) {
             if (!it.previous().handleEvent(event)) {
