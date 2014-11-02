@@ -5,6 +5,7 @@ import org.jsfml.system.Time;
 import org.jsfml.system.Vector2f;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -164,10 +165,10 @@ public class SceneNode extends BasicTransformable
 
     public void removeWrecks() {
         // Remove all children which request so
-        List<SceneNode> originalChildren = new ArrayList<>(children);
-        for (SceneNode child : originalChildren) {
+        for (Iterator<SceneNode> itr = children.iterator(); itr.hasNext(); ) {
+            SceneNode child = itr.next();
             if (child.isMarkedForRemoval()) {
-                children.remove(child);
+                itr.remove();
             }
         }
 
