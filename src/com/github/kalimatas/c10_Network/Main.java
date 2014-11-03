@@ -7,7 +7,6 @@ public class Main {
             app.run();
         } catch (Exception e) {
             e.printStackTrace();
-            //System.out.println("EXCEPTION: " + e.getMessage());
         }
     }
 }
