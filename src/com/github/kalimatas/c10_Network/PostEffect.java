@@ -22,6 +22,11 @@ public abstract class PostEffect {
     }
 
     public static boolean isSupported() {
-        return Shader.isAvailable();
+        // On Mac OS X 10.10 the game just freezes after some time
+        // with bloom effect enabled, so I disabled it (though on 10.9 it worked).
+        // To enable the effect uncomment the following line.
+        //return Shader.isAvailable();
+
+        return false;
     }
 }

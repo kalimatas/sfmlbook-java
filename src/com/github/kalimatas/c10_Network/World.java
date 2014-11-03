@@ -113,8 +113,7 @@ public class World {
     }
 
     public void draw() throws TextureCreationException {
-        //if (PostEffect.isSupported()) {
-        if (false) {
+        if (PostEffect.isSupported()) {
             sceneTexture.clear();
             sceneTexture.setView(worldView);
             sceneTexture.draw(sceneGraph);
